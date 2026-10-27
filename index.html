@@ -25,13 +25,11 @@ h3{font-size:15px;margin:20px 0 8px}
 label{display:block;font-size:14px;font-weight:700;margin:14px 0 7px}
 input,select,textarea,button{font:inherit}
 input[type=text],input[type=tel],input[type=email],input[type=number],select,textarea,input[type=file]{width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;background:#fff}
-input[type=color]{width:64px;height:42px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:3px}
 button{border:0;border-radius:10px;padding:12px 16px;background:var(--accent);color:#fff;cursor:pointer;font-weight:700}
 button.secondary{background:#edf0f4;color:#222}
 button.danger{background:#fee2e2;color:var(--danger);padding:8px 12px;font-size:13px}
 button.danger:hover{background:#fca5a5}
 button:focus,input:focus,select:focus{outline:2px solid #8ab4ff;outline-offset:1px}
-.colors{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 
 .editor-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
 .stage{background:#f0f3f7;border-radius:12px;padding:12px;text-align:center;min-width:0}
@@ -64,7 +62,7 @@ button:focus,input:focus,select:focus{outline:2px solid #8ab4ff;outline-offset:1
 
 /* 아이콘 버튼 툴바 */
 .icon-toolbar{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0;background:#f8fafc;padding:10px;border-radius:10px;border:1px solid var(--line)}
-.icon-btn{padding:8px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:18px;color:#000000;display:flex;align-items:center;justify-content:center;transition:all 0.2s;font-weight:bold;}
+.icon-btn{padding:8px 14px;background:#fff;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:18px;color:#000000;display:flex;align-items:center;justify-content:center;transition:all 0.2s;font-weight:bold;}
 .icon-btn:hover{background:#edf0f4;border-color:#b0b8c5}
 
 /* 요소 조절 제어판 아이템 */
@@ -127,16 +125,13 @@ footer{max-width:1180px;margin:auto;padding:0 16px 28px;color:var(--muted);font-
     </div>
   </div>
 
-  <!-- 꾸밈 아이콘 버튼 영역 -->
-  <label style="margin-top:16px;">꾸밈 아이콘 추가 (실크인쇄용 아이콘)</label>
+  <!-- 꾸밈 아이콘 버튼 영역 (수정: 하트, 별, 반짝임, 동그라미) -->
+  <label style="margin-top:16px;">꾸밈 아이콘 추가</label>
   <div class="icon-toolbar">
     <button type="button" class="icon-btn" data-icon="♥" title="하트">♥</button>
     <button type="button" class="icon-btn" data-icon="★" title="별">★</button>
-    <button type="button" class="icon-btn" data-icon="◡‿◡" title="스마일">◡‿◡</button>
     <button type="button" class="icon-btn" data-icon="✦" title="반짝임">✦</button>
-    <button type="button" class="icon-btn" data-icon="✿" title="꽃">✿</button>
-    <button type="button" class="icon-btn" data-icon="♪" title="음표">♪</button>
-    <button type="button" class="icon-btn" data-icon="♚" title="왕관">♚</button>
+    <button type="button" class="icon-btn" data-icon="●" title="동그라미">●</button>
   </div>
 
   <hr class="section-line">
@@ -164,15 +159,78 @@ footer{max-width:1180px;margin:auto;padding:0 16px 28px;color:var(--muted);font-
 
 <section class="card">
   <h2>2. 풍선 및 인쇄 옵션</h2>
-  <label for="balloonColor">풍선 색상</label>
-  <div class="colors"><input id="balloonColor" type="color" value="#ffffff"><select id="balloonPreset" aria-label="풍선 색상 선택">
-    <option value="#ffffff">화이트</option><option value="#fff176">노랑</option><option value="#f7a8c8">핑크</option><option value="#a8d8ff">하늘색</option><option value="#ff7777">빨강</option><option value="#b8e6c1">연두</option><option value="#292929">검정</option><option value="#c9c9c9">은회색</option>
-  </select></div>
-  <label for="inkColor">실크 인쇄 잉크 색상</label>
-  <div class="colors"><input id="inkColor" type="color" value="#000000"><select id="inkPreset" aria-label="인쇄 잉크 색상 선택">
-    <option value="#000000">검정</option><option value="#ffffff">흰색</option><option value="#e53935">빨강</option><option value="#1565c0">파랑</option><option value="#ffd600">노랑</option><option value="#008a50">초록</option><option value="#7b1fa2">보라</option>
-  </select></div>
-  <p class="hint">잉크 색상은 미리보기 및 저장 시안에 반영됩니다. (편집 영역은 항상 절대검정색으로 유지됩니다.)</p>
+  <label for="balloonPreset">풍선 색상 선택</label>
+  <select id="balloonPreset" aria-label="풍선 색상 선택">
+    <optgroup label="Standard Colors (스탠다드)">
+      <option value="#ffffff" selected>White (화이트)</option>
+      <option value="#fff100">Yellow (노랑)</option>
+      <option value="#ffb6c1">Pink (핑크)</option>
+      <option value="#d10069">Fuchsia (푸시아)</option>
+      <option value="#e50012">Red (빨강)</option>
+      <option value="#ff6600">Orange (주황)</option>
+      <option value="#009944">Green (초록)</option>
+      <option value="#005a36">Dark Green (다크그린)</option>
+      <option value="#70c0e8">Light Blue (연하늘)</option>
+      <option value="#40e0d0">Mint (민트)</option>
+      <option value="#00a0e9">Aqua (아쿠아)</option>
+      <option value="#003399">Blue (파랑)</option>
+      <option value="#001d5a">Dark Blue (다크블루)</option>
+      <option value="#4b0082">Lavender/Purple (보라)</option>
+      <option value="#111111">Black (검정)</option>
+    </optgroup>
+    <optgroup label="Pearl Colors (펄)">
+      <option value="#f8f9fa">Pearl White (펄 화이트)</option>
+      <option value="#fffdd0">Pearl Cream (펄 크림)</option>
+      <option value="#ffee75">Pearl Yellow (펄 노랑)</option>
+      <option value="#ffb3ba">Pearl Pink (펄 핑크)</option>
+      <option value="#ffb380">Pearl Peach (펄 피치)</option>
+      <option value="#ff7f50">Pearl Orange (펄 주황)</option>
+      <option value="#e63946">Pearl Red (펄 빨강)</option>
+      <option value="#b57edc">Pearl Lavender (펄 라벤더)</option>
+      <option value="#8a2be2">Pearl Purple (펄 퍼플)</option>
+      <option value="#87ceeb">Pearl Light Blue (펄 연하늘)</option>
+      <option value="#4682b4">Pearl Blue (펄 파랑)</option>
+      <option value="#98ff98">Pearl Mint/Green (펄 연두)</option>
+      <option value="#ffd700">Pearl Gold (펄 골드)</option>
+      <option value="#c0c0c0">Pearl Silver (펄 실버)</option>
+      <option value="#222222">Pearl Black (펄 검정)</option>
+    </optgroup>
+    <optgroup label="Pastel & Pastel Matt Colors (파스텔)">
+      <option value="#fcd5ce">Pastel Peach (파스텔 피치)</option>
+      <option value="#fde2e4">Pastel Yellow (파스텔 노랑)</option>
+      <option value="#ffcad4">Pastel Pink (파스텔 핑크)</option>
+      <option value="#e2ece9">Pastel Lavender (파스텔 라벤더)</option>
+      <option value="#d8e2dc">Pastel Lime (파스텔 라임)</option>
+      <option value="#b1e5d9">Pastel Mint (파스텔 민트)</option>
+      <option value="#a2d2ff">Pastel Blue (파스텔 블루)</option>
+      <option value="#d4a373">Pastel Beige (파스텔 베이지)</option>
+      <option value="#6b705c">Pastel Olive (파스텔 올리브)</option>
+      <option value="#4a3b32">Pastel Brown (파스텔 브라운)</option>
+    </optgroup>
+    <optgroup label="Crystal & Chrome Colors (크리스탈 & 크롬)">
+      <option value="#ffffffd0">Crystal Clear (크리스탈 투명)</option>
+      <option value="#d4af37">Chrome Gold (크롬 골드)</option>
+      <option value="#a8a8a8">Chrome Silver (크롬 실버)</option>
+      <option value="#2a6f97">Chrome Blue (크롬 블루)</option>
+      <option value="#1b4332">Chrome Green (크롬 그린)</option>
+      <option value="#5a189a">Chrome Purple (크롬 퍼플)</option>
+    </optgroup>
+  </select>
+
+  <label for="inkPreset" style="margin-top:14px;">실크 인쇄 잉크 색상 선택</label>
+  <select id="inkPreset" aria-label="인쇄 잉크 색상 선택">
+    <option value="#000000" selected>검정 (Black)</option>
+    <option value="#ffffff">흰색 (White)</option>
+    <option value="#e53935">빨강 (Red)</option>
+    <option value="#1565c0">파랑 (Blue)</option>
+    <option value="#ffd600">노랑 (Yellow)</option>
+    <option value="#008a50">초록 (Green)</option>
+    <option value="#7b1fa2">보라 (Purple)</option>
+    <option value="#d4af37">골드 (Gold)</option>
+    <option value="#c0c0c0">실버 (Silver)</option>
+  </select>
+  <p class="hint">선택한 풍선 및 잉크 색상은 오른쪽 시안 미리보기 및 다운로드 이미지에 적용됩니다.</p>
+
   <label for="balloonType">풍선 종류</label>
   <select id="balloonType"><option>일반 고무풍선</option><option>은박풍선 (별도 확인 필요)</option></select>
   <label for="balloonSize">풍선 크기</label>
@@ -205,7 +263,8 @@ const balloon=$('balloon'), printArea=$('printArea');
 
 let sourceImage=null, processedCanvas=null, processedUrl=null;
 let logoX=50, logoY=50;
-let objectUrl=null, inkColor='#000000';
+let objectUrl=null;
+let inkColor='#000000';
 
 let items = [];
 let nextId = 1;
@@ -213,7 +272,6 @@ let nextId = 1;
 function syncPositions(){
   const logoSize=Number($('logoSize').value);
   
-  // 1. 업로드 로고 동기화 (편집 창 & 미리보기 창 모두 완벽한 연동)
   editor.style.width=logoSize+'%';
   editor.style.height='auto';
   editor.style.left=logoX+'%';
@@ -232,7 +290,6 @@ function syncPositions(){
   print.style.height='auto';
   $('sizeLabel').textContent=logoSize+'%';
 
-  // 2. 추가 텍스트 및 아이콘 동기화
   const scale = workspaceRect.width / 260 || 1;
   items.forEach(item => {
     if(item.el){
@@ -378,7 +435,6 @@ $('deleteLogoBtn').addEventListener('click', () => {
   $('logoStatus').textContent = '로고가 삭제되었습니다.';
 });
 
-// 드래그 제어 (로고와 모든 요소를 지원)
 function makeDraggable(element, itemObj){
   let dragging = false;
   let lastX = 0, lastY = 0;
@@ -414,7 +470,6 @@ function makeDraggable(element, itemObj){
   element.addEventListener('pointercancel', stopDrag);
 }
 
-// 이미지 업로드 로고 깔끔한 단색 이진화(Binary Thresholding) 처리
 function renderProcessed(){
   if(!sourceImage) return;
   const w=sourceImage.naturalWidth, h=sourceImage.naturalHeight;
@@ -422,17 +477,13 @@ function renderProcessed(){
   const ctx=c.getContext('2d', {willReadFrequently:true}); ctx.drawImage(sourceImage,0,0);
   const im=ctx.getImageData(0,0,w,h), d=im.data;
 
-  // 고품질 Threshold 알고리즘 (지저분한 노이즈 완전 제거)
   for(let i=0;i<d.length;i+=4){
     const r=d[i], g=d[i+1], b=d[i+2], a=d[i+3];
-    // 휘도(밝기) 계산
     const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
 
-    // 밝은 배경(휘도 200 이상)이거나 거의 투명한 경우 배경으로 처리
     if(brightness > 200 || a < 40){
-      d[i+3] = 0; // 완전 투명
+      d[i+3] = 0;
     } else {
-      // 로고 선/도안 부분: 절대 검정(#000000)으로 선명하게 단색화
       d[i] = 0;
       d[i+1] = 0;
       d[i+2] = 0;
@@ -457,7 +508,6 @@ function renderProcessed(){
   },'image/png');
 }
 
-// 미리보기용 실크 인쇄 색상 변환
 function updatePrintImage(){
   if(!processedCanvas) return;
   const c=document.createElement('canvas');
@@ -487,7 +537,6 @@ function updatePrintImage(){
   },'image/png');
 }
 
-// 로고 이미지에 드래그 이벤트 연결
 makeDraggable(editor, null);
 
 $('logoFile').addEventListener('change', e=>{
@@ -509,17 +558,16 @@ $('resetPositions').addEventListener('click', ()=>{
   syncPositions();
 });
 
+// 풍선 색상 드롭다운 변경 이벤트
 function setBalloonColor(v){ balloon.style.setProperty('--balloon', v); balloon.style.backgroundColor=v; }
-$('balloonColor').addEventListener('input', e=>{ setBalloonColor(e.target.value); $('balloonPreset').value=e.target.value; });
-$('balloonPreset').addEventListener('change', e=>{ $('balloonColor').value=e.target.value; setBalloonColor(e.target.value); });
+$('balloonPreset').addEventListener('change', e=>setBalloonColor(e.target.value));
 
+// 인쇄 잉크 색상 드롭다운 변경 이벤트
 function setInkColor(v){
   inkColor=v;
-  $('inkColor').value=v;
   updatePrintImage();
   syncPositions();
 }
-$('inkColor').addEventListener('input', e=>{ $('inkPreset').value=e.target.value; setInkColor(e.target.value); });
 $('inkPreset').addEventListener('change', e=>setInkColor(e.target.value));
 
 // PNG 시안 다운로드
@@ -531,7 +579,7 @@ $('downloadPreview').addEventListener('click', ()=>{
   const bx=180, by=45, bw=540, bh=790;
   ctx.save();
   ctx.beginPath(); ctx.ellipse(bx+bw/2, by+bh*.46, bw*.49, bh*.46, 0, 0, Math.PI*2); ctx.clip();
-  ctx.fillStyle=$('balloonColor').value; ctx.fillRect(bx,by,bw,bh);
+  ctx.fillStyle=$('balloonPreset').value; ctx.fillRect(bx,by,bw,bh);
 
   const sh=ctx.createRadialGradient(bx+bw*.29, by+bh*.18, 5, bx+bw*.29, by+bh*.18, bw*.68);
   sh.addColorStop(0, '#ffffffb8'); sh.addColorStop(1, '#ffffff00');
@@ -554,7 +602,7 @@ $('downloadPreview').addEventListener('click', ()=>{
     temp.width=processedCanvas.width; temp.height=processedCanvas.height;
     const t=temp.getContext('2d'); t.drawImage(processedCanvas,0,0);
     t.globalCompositeOperation='source-in';
-    t.fillStyle=$('inkColor').value; t.fillRect(0,0,temp.width,temp.height);
+    t.fillStyle=$('inkPreset').value; t.fillRect(0,0,temp.width,temp.height);
 
     const logoWidth=workspaceWidth*0.52*(Number($('logoSize').value)/100)*scaleFactor;
     const logoHeight=logoWidth*(temp.height/temp.width);
@@ -598,6 +646,7 @@ $('downloadPreview').addEventListener('click', ()=>{
 $('submitRequest').addEventListener('click', ()=>alert('접수 기능 준비 중입니다.'));
 window.addEventListener('resize', syncPositions);
 syncPositions();
+setBalloonColor($('balloonPreset').value);
 </script>
 </body>
 </html>
