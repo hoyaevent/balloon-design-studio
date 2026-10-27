@@ -66,8 +66,8 @@ button:focus,input:focus,select:focus{outline:2px solid #8ab4ff;outline-offset:1
 .print-item{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;white-space:nowrap;line-height:1;display:inline-block}
 
 /* 아이콘 버튼 툴바 */
-.icon-toolbar{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0;background:#f8fafc;padding:10px;border-radius:10px;border:1px solid var(--line)}
-.icon-btn{padding:8px 14px;background:#fff;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:18px;color:#000000;display:flex;align-items:center;justify-content:center;transition:all 0.2s;font-weight:bold;}
+.icon-toolbar{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;background:#f8fafc;padding:8px;border-radius:10px;border:1px solid var(--line)}
+.icon-btn{padding:6px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:16px;color:#000000;display:flex;align-items:center;justify-content:center;transition:all 0.2s;font-weight:bold;}
 .icon-btn:hover{background:#edf0f4;border-color:#b0b8c5}
 
 /* 요소 조절 제어판 아이템 */
@@ -102,12 +102,20 @@ footer{max-width:1180px;margin:auto;padding:0 16px 28px;color:var(--muted);font-
   <h2>1. 로고 및 문구 편집</h2>
   <p class="hint">로고 이미지를 올리거나 텍스트, 아이콘을 추가하여 시안을 꾸며보세요. 편집 원 안에서 마우스로 자유롭게 위치를 이동시킬 수 있습니다.</p>
   
-  <!-- [앞면] 로고 업로드 -->
+  <!-- [앞면] 로고 업로드 및 꾸미기 -->
   <label for="logoFile">앞면 로고 이미지 업로드 (JPG / PNG / WEBP)</label>
   <input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp">
   
   <div style="margin-top:10px;">
-    <button id="addTextBtn" type="button" class="secondary" style="width:100%">+ 텍스트 추가 (최대 3개)</button>
+    <button id="addTextBtn" type="button" class="secondary" style="width:100%">+ 앞면 텍스트 추가 (최대 3개)</button>
+  </div>
+
+  <label style="margin-top:10px; font-size:12px;">앞면 꾸밈 아이콘 추가</label>
+  <div class="icon-toolbar">
+    <button type="button" class="icon-btn front-icon-btn" data-icon="♥" title="하트">♥</button>
+    <button type="button" class="icon-btn front-icon-btn" data-icon="★" title="별">★</button>
+    <button type="button" class="icon-btn front-icon-btn" data-icon="✦" title="반짝임">✦</button>
+    <button type="button" class="icon-btn front-icon-btn" data-icon="●" title="동그라미">●</button>
   </div>
 
   <!-- [앞면] 편집 영역 & 미리보기 -->
@@ -141,6 +149,14 @@ footer{max-width:1180px;margin:auto;padding:0 16px 28px;color:var(--muted);font-
       <button id="addBackTextBtn" type="button" class="secondary" style="width:100%">+ 뒷면 텍스트 추가 (최대 3개)</button>
     </div>
 
+    <label style="margin-top:10px; font-size:12px;">뒷면 꾸밈 아이콘 추가</label>
+    <div class="icon-toolbar">
+      <button type="button" class="icon-btn back-icon-btn" data-icon="♥" title="하트">♥</button>
+      <button type="button" class="icon-btn back-icon-btn" data-icon="★" title="별">★</button>
+      <button type="button" class="icon-btn back-icon-btn" data-icon="✦" title="반짝임">✦</button>
+      <button type="button" class="icon-btn back-icon-btn" data-icon="●" title="동그라미">●</button>
+    </div>
+
     <div class="editor-shell">
       <div class="stage">
         <p class="stage-title">🖼️ 로고 편집 영역 (뒷면)</p>
@@ -161,15 +177,6 @@ footer{max-width:1180px;margin:auto;padding:0 16px 28px;color:var(--muted);font-
         <p class="balloon-note">원형 편집 영역 바깥은 인쇄 시안에 표시되지 않습니다.</p>
       </div>
     </div>
-  </div>
-
-  <!-- 꾸밈 아이콘 버튼 영역 -->
-  <label style="margin-top:16px;">꾸밈 아이콘 추가</label>
-  <div class="icon-toolbar">
-    <button type="button" class="icon-btn" data-icon="♥" title="하트">♥</button>
-    <button type="button" class="icon-btn" data-icon="★" title="별">★</button>
-    <button type="button" class="icon-btn" data-icon="✦" title="반짝임">✦</button>
-    <button type="button" class="icon-btn" data-icon="●" title="동그라미">●</button>
   </div>
 
   <hr class="section-line">
@@ -350,9 +357,10 @@ const basicInkOptions = [
   { value: '#ffffff', text: '흰색 (White)' }
 ];
 
+// 잉크 옵션 업데이트 (오류 수정: 항상 초기 선택지 보장)
 function updateInkOptions() {
   const qtyVal = $('quantity').value;
-  const is100up = (qtyVal === '100up'); // 100개 이상인 경우 블랙, 화이트만
+  const is100up = (qtyVal === '100up');
   const select = $('inkPreset');
   const currentVal = select.value;
   
@@ -368,11 +376,7 @@ function updateInkOptions() {
 
   if (is100up) {
     $('inkHint').textContent = '※ 100개 이상 제작 수량은 검정 및 흰색 잉크만 선택 가능합니다.';
-    if (currentVal !== '#000000' && currentVal !== '#ffffff') {
-      select.value = '#000000';
-    } else {
-      select.value = currentVal;
-    }
+    select.value = (currentVal === '#ffffff') ? '#ffffff' : '#000000';
   } else {
     $('inkHint').textContent = '※ 1,000개 이상 수량은 다양한 실크 인쇄 잉크 색상을 선택하실 수 있습니다.';
     select.value = currentVal || '#000000';
@@ -495,12 +499,19 @@ $('addBackTextBtn').addEventListener('click', () => {
   createItem('text', '뒷면문구', 'font-gothic', 22, 'back');
 });
 
-// 아이콘 추가 (현재 활성화된 탭 혹은 기본 앞면)
-document.querySelectorAll('.icon-btn').forEach(btn => {
+// [앞면] 아이콘 버튼 클릭 이벤트
+document.querySelectorAll('.front-icon-btn').forEach(btn => {
   btn.addEventListener('click', (e) => {
     const iconChar = e.currentTarget.getAttribute('data-icon');
-    const targetSide = (selectedPrintType.includes('양면') && confirm('뒷면에 아이콘을 추가하시겠습니까? (취소 시 앞면 추가)')) ? 'back' : 'front';
-    createItem('icon', iconChar, 'font-gothic', 28, targetSide);
+    createItem('icon', iconChar, 'font-gothic', 28, 'front');
+  });
+});
+
+// [뒷면] 아이콘 버튼 클릭 이벤트
+document.querySelectorAll('.back-icon-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const iconChar = e.currentTarget.getAttribute('data-icon');
+    createItem('icon', iconChar, 'font-gothic', 28, 'back');
   });
 });
 
@@ -675,7 +686,6 @@ function makeDraggable(element, itemObj){
   element.addEventListener('pointercancel', stopDrag);
 }
 
-// 흑백 이진화 처리 공통 함수
 function processImageToCanvas(imgElem){
   const w = imgElem.naturalWidth, h = imgElem.naturalHeight;
   const c = document.createElement('canvas'); c.width = w; c.height = h;
@@ -812,7 +822,7 @@ function updatePrintImage(targetSide){
 makeDraggable(editor, null);
 makeDraggable(backEditor, null);
 
-/* 통합 이미지 다운로드 기능 (단면: 2000x1000 / 양면: 2000x2000 위아래 배치) */
+/* 통합 이미지 다운로드 기능 (단면: 2000x1000 / 양면: 2000x2000 4분할 레이아웃) */
 $('downloadCombinedImage').addEventListener('click', () => {
   const isDoubleSide = selectedPrintType.includes('양면');
   const canvasW = 2000;
@@ -829,19 +839,29 @@ $('downloadCombinedImage').addEventListener('click', () => {
   ctx.fillRect(0, 0, canvasW, canvasH);
 
   if(!isDoubleSide){
-    // 단면: 좌측 도안, 우측 풍선
+    // 단면: 2000x1000 (좌: 도안, 우: 미리보기)
     ctx.strokeStyle = '#d9dee7'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(1000, 40); ctx.lineTo(1000, 960); ctx.stroke();
 
-    renderLogoWorkspaceOnCanvas(ctx, 500, 500, processedCanvas, logoX, logoY, items, Number($('logoSize').value));
+    renderLogoWorkspaceOnCanvas(ctx, 500, 500, processedCanvas, logoX, logoY, items, Number($('logoSize').value), '인쇄 로고 도안 (#000000)');
     renderBalloonOnCanvas(ctx, 1500, 500, processedCanvas, logoX, logoY, items, Number($('logoSize').value), `풍선 미리보기 시안 (${selectedPrintType})`);
   } else {
-    // 양면: 위쪽 앞면 풍선, 아래쪽 뒷면 풍선 (2000x2000)
+    // 양면: 2000x2000 4분할 (상단: 앞면 도안 & 시안 / 하단: 뒷면 도안 & 시안)
     ctx.strokeStyle = '#d9dee7'; ctx.lineWidth = 2;
+    // 세로 구분선
+    ctx.beginPath(); ctx.moveTo(1000, 40); ctx.lineTo(1000, 1960); ctx.stroke();
+    // 가로 구분선
     ctx.beginPath(); ctx.moveTo(40, 1000); ctx.lineTo(1960, 1000); ctx.stroke();
 
-    renderBalloonOnCanvas(ctx, 1000, 500, processedCanvas, logoX, logoY, items, Number($('logoSize').value), '풍선 미리보기 시안 (앞면)');
-    renderBalloonOnCanvas(ctx, 1000, 1500, backProcessedCanvas, backLogoX, backLogoY, backItems, Number($('backLogoSize').value), '풍선 미리보기 시안 (뒷면)');
+    // 1. 좌측 상단 (앞면 로고 도안)
+    renderLogoWorkspaceOnCanvas(ctx, 500, 500, processedCanvas, logoX, logoY, items, Number($('logoSize').value), '앞면 인쇄 로고 도안 (#000000)');
+    // 2. 우측 상단 (앞면 풍선 미리보기)
+    renderBalloonOnCanvas(ctx, 1500, 500, processedCanvas, logoX, logoY, items, Number($('logoSize').value), '앞면 풍선 미리보기 시안');
+
+    // 3. 좌측 하단 (뒷면 로고 도안)
+    renderLogoWorkspaceOnCanvas(ctx, 500, 1500, backProcessedCanvas, backLogoX, backLogoY, backItems, Number($('backLogoSize').value), '뒷면 인쇄 로고 도안 (#000000)');
+    // 4. 우측 하단 (뒷면 풍선 미리보기)
+    renderBalloonOnCanvas(ctx, 1500, 1500, backProcessedCanvas, backLogoX, backLogoY, backItems, Number($('backLogoSize').value), '뒷면 풍선 미리보기 시안');
   }
 
   const customerName = $('customerName').value.trim();
@@ -855,7 +875,7 @@ $('downloadCombinedImage').addEventListener('click', () => {
   a.click();
 });
 
-function renderLogoWorkspaceOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetItems, lSize){
+function renderLogoWorkspaceOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetItems, lSize, titleText){
   const circleRadius = 320;
   ctx.save();
   ctx.beginPath();
@@ -897,7 +917,7 @@ function renderLogoWorkspaceOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, tar
   ctx.fillStyle = '#20242b';
   ctx.font = 'bold 24px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('인쇄 로고 도안 (#000000)', centerX, centerY - 380);
+  ctx.fillText(titleText, centerX, centerY - 380);
 }
 
 function renderBalloonOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetItems, lSize, titleText){
@@ -981,6 +1001,7 @@ function renderBalloonOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetIte
 $('submitRequest').addEventListener('click', ()=>alert('접수 기능 준비 중입니다.'));
 window.addEventListener('resize', syncPositions);
 
+// 초기화
 updateInkOptions();
 setBalloonColor($('balloonPreset').value);
 syncPositions();
