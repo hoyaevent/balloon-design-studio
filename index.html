@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>만봉프린트 | 인쇄풍선 시안 제작</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,18 +12,19 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:#20242b;font-family:Arial,"Malgun Gothic",sans-serif}
 header{background:#fff;border-bottom:1px solid var(--line);padding:24px 20px}
-.header-inner,main{max-width:1280px;margin:auto}
+.header-inner,main{max-width:1180px;margin:auto;transition:max-width 0.3s ease}
+body.double-sided-mode .header-inner,
+body.double-sided-mode main{max-width:1680px} /* 양면 작업 시 전체 폭 대폭 확장 */
+
 h1{font-size:clamp(22px,3vw,30px);margin:0 0 10px}
 p{line-height:1.6}
 .muted,.hint{color:var(--muted);font-size:13px;margin-bottom:12px;}
 main{padding:28px 16px 56px}
-
-/* 메인 카드 레이아웃 */
-.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+.layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,0.8fr);gap:24px;align-items:start}
 .card{background:var(--card);border:1px solid #e4e7ec;border-radius:18px;padding:24px;min-width:0;box-shadow:0 2px 8px rgba(0,0,0,0.02)}
 h2{font-size:20px;margin:0 0 18px;border-bottom:2px solid var(--line);padding-bottom:10px}
-h3{font-size:15px;margin:18px 0 10px;color:#334155;}
-label{display:block;font-size:14px;font-weight:700;margin:20px 0 8px}
+h3{font-size:16px;margin:20px 0 12px}
+label{display:block;font-size:14px;font-weight:700;margin:18px 0 8px}
 input,select,textarea,button{font:inherit}
 input[type=text],input[type=tel],input[type=email],input[type=number],select,textarea,input[type=file]{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff;margin-bottom:6px}
 button{border:0;border-radius:10px;padding:12px 16px;background:var(--accent);color:#fff;cursor:pointer;font-weight:700}
@@ -32,29 +33,31 @@ button.danger{background:#fee2e2;color:var(--danger);padding:8px 12px;font-size:
 button.danger:hover{background:#fca5a5}
 button:focus,input:focus,select:focus{outline:2px solid #8ab4ff;outline-offset:1px}
 
-/* 편집 구간 박스 디자인 */
-.design-boxes-container {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-  margin-top: 20px;
+/* 편집 박스 레이아웃 컨테이너 */
+.editors-wrapper{display:grid;grid-template-columns:1fr;gap:20px;margin-top:16px}
+
+/* PC 화면에서 양면 선택 시 각 편집박스가 단면 원본 크기 그대로 나란히 2컬럼 배치 */
+@media (min-width: 1200px) {
+  body.double-sided-mode .editors-wrapper {
+    grid-template-columns: minmax(520px, 1fr) minmax(520px, 1fr);
+  }
 }
 
-.section-box{background:#f8fafc;border:2px solid #cbd5e1;border-radius:14px;padding:18px;display:flex;flex-direction:column;}
+.section-box{background:#f8fafc;border:2px solid #cbd5e1;border-radius:14px;padding:20px;margin-bottom:10px}
 .section-box.back-box{background:#f1f5f9;border-color:#94a3b8}
-.section-tag{display:inline-block;padding:5px 12px;background:#334155;color:#fff;font-size:13px;font-weight:bold;border-radius:6px;margin-bottom:14px;align-self:flex-start;}
+.section-tag{display:inline-block;padding:6px 14px;background:#334155;color:#fff;font-size:13px;font-weight:bold;border-radius:6px;margin-bottom:16px}
 .section-tag.back-tag{background:#475569}
 
 .print-type-tabs{display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;margin-bottom:20px;}
 .print-type-btn{background:#edf0f4;color:#333;padding:12px 8px;border-radius:10px;font-size:14px;border:1px solid var(--line);cursor:pointer;transition:all 0.2s;}
 .print-type-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:bold;}
 
-.editor-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:14px}
-.stage{background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;min-width:0}
-.stage-title{font-size:13px;font-weight:700;margin:0 0 10px;color:#1e293b;}
-.circle-workspace{width:min(100%,240px);aspect-ratio:1;border:2px solid #343b48;border-radius:50%;background:#fff;position:relative;margin:auto;overflow:hidden;touch-action:none}
+.editor-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:14px}
+.stage{background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center;min-width:0}
+.stage-title{font-size:13px;font-weight:700;margin:0 0 12px;color:#1e293b;}
+.circle-workspace{width:min(100%,260px);aspect-ratio:1;border:2px solid #343b48;border-radius:50%;background:#fff;position:relative;margin:auto;overflow:hidden;touch-action:none}
 
-.balloon-wrap{width:min(100%,240px);aspect-ratio:.82;margin:auto;position:relative}
+.balloon-wrap{width:min(100%,260px);aspect-ratio:.82;margin:auto;position:relative}
 .balloon{position:absolute;inset:2% 2% 7%;border-radius:49% 49% 45% 45% / 40% 40% 57% 57%;background:radial-gradient(ellipse at 29% 20%,#ffffffd9 0%,#ffffff40 14%,transparent 32%),radial-gradient(ellipse at 68% 75%,#0000000b,transparent 55%),var(--balloon,#fff);border:1px solid #d4d8df;box-shadow:inset -12px -14px 20px #0000000a,0 10px 18px #0000000b;overflow:hidden}
 .balloon:after{content:"";position:absolute;bottom:-1%;left:45%;width:10%;height:9%;background:var(--balloon,#fff);clip-path:polygon(0 0,100% 0,50% 100%)}
 .print-area{position:absolute;left:50%;top:47%;width:52%;aspect-ratio:1;border-radius:50%;overflow:hidden;transform:translate(-50%,-50%);z-index:1;pointer-events:none}
@@ -75,55 +78,28 @@ button:focus,input:focus,select:focus{outline:2px solid #8ab4ff;outline-offset:1
 
 .print-item{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;white-space:nowrap;line-height:1;display:inline-block}
 
-.icon-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px;background:#fff;padding:8px;border-radius:10px;border:1px solid var(--line)}
-.icon-btn{padding:8px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:15px;color:#000000;display:flex;align-items:center;justify-content:center;transition:all 0.2s;font-weight:bold;}
+.icon-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px;background:#fff;padding:10px;border-radius:10px;border:1px solid var(--line)}
+.icon-btn{padding:8px 14px;background:#fff;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:16px;color:#000000;display:flex;align-items:center;justify-content:center;transition:all 0.2s;font-weight:bold;}
 .icon-btn:hover{background:#edf0f4;border-color:#b0b8c5}
 
-/* 요소 세부 조절 영역 (각 편집 박스 내부) */
-.sub-controls-wrapper{margin-top:20px;border-top:1px dashed #cbd5e1;padding-top:14px;}
-.control-item{background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px}
-.control-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.control-item{background:#ffffff;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:12px}
+.control-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .control-header span{font-size:13px;font-weight:bold}
-.control-row{display:flex;gap:8px;align-items:center;margin-top:6px}
-.control-row input[type=text]{flex:1;margin-bottom:0;padding:8px 10px;font-size:13px;}
-.control-row select{width:110px;margin-bottom:0;padding:8px;font-size:13px;}
+.control-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+.control-row input[type=text]{flex:1;margin-bottom:0}
+.control-row select{width:120px;margin-bottom:0}
 
-.balloon-note{font-size:11px;color:var(--muted);margin:8px 0 0}
-.range-row{display:flex;gap:10px;align-items:center}
+.balloon-note{font-size:12px;color:var(--muted);margin:10px 0 0}
+.range-row{display:flex;gap:12px;align-items:center}
 .range-row input{flex:1;min-width:0;margin-bottom:0}
-.range-row span{font-size:12px;font-weight:bold;min-width:38px;text-align:right;}
-
 .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
 .actions button{flex:1}
-.section-line{border:0;border-top:1px solid #e2e8f0;margin:28px 0}
+.section-line{border:0;border-top:1px solid #e2e8f0;margin:24px 0}
 .notice{background:#fff8e6;border:1px solid #f4df9b;padding:14px;border-radius:10px;font-size:13px;line-height:1.6;margin-top:18px}
 .status{font-size:13px;margin-top:12px;white-space:pre-wrap}
-footer{max-width:1280px;margin:auto;padding:0 16px 36px;color:var(--muted);font-size:12px}
-
-/* 데스크톱(PC) 반응형 스타일: 992px 이상에서 양면 선택시 디자인 편집 박스를 가로로 나란히 배치 */
-@media (min-width: 992px) {
-  .layout {
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
-  }
-  .design-boxes-container.double-side {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media(max-width:760px){
-  main{padding:16px 10px 36px}
-  .layout{grid-template-columns:1fr}
-  .card{padding:18px}
-  .editor-shell{grid-template-columns:1fr 1fr;gap:8px}
-  .stage{padding:8px}
-  .circle-workspace{width:100%}
-  .balloon-wrap{width:100%}
-  .print-type-tabs{grid-template-columns:repeat(2, 1fr);}
-}
-@media(max-width:420px){
-  .editor-shell{grid-template-columns:1fr}
-  .circle-workspace,.balloon-wrap{max-width:220px}
-}
+footer{max-width:1180px;margin:auto;padding:0 16px 36px;color:var(--muted);font-size:12px}
+@media(max-width:1024px){.layout{grid-template-columns:1fr}.card{padding:18px}.editor-shell{grid-template-columns:1fr 1fr;gap:8px}.stage{padding:8px}.circle-workspace,.balloon-wrap{width:100%}.print-type-tabs{grid-template-columns:repeat(2, 1fr);}}
+@media(max-width:480px){.editor-shell{grid-template-columns:1fr}.circle-workspace,.balloon-wrap{max-width:240px}}
 </style>
 </head>
 <body>
@@ -133,14 +109,11 @@ footer{max-width:1280px;margin:auto;padding:0 16px 36px;color:var(--muted);font-
 </div></header>
 <main>
 <div class="layout">
-<!-- 왼쪽 영역: 로고 및 문구 편집 -->
 <section class="card">
   <h2>1. 로고 및 문구 편집</h2>
-  <p class="hint">로고 이미지를 올리거나 텍스트, 아이콘을 추가하여 시안을 꾸며보세요. 원 안에서 마우스로 위치를 이동시킬 수 있습니다.</p>
+  <p class="hint">로고 이미지를 올리거나 텍스트, 아이콘을 추가하여 시안을 꾸며보세요. 편집 원 안에서 마우스로 자유롭게 위치를 이동시킬 수 있습니다.</p>
 
-  <!-- 디자인 편집 박스 컨테이너 (PC 양면 시 Side-by-Side) -->
-  <div id="designBoxesContainer" class="design-boxes-container">
-    
+  <div class="editors-wrapper">
     <!-- [앞면] 디자인 편집 독립 박스 -->
     <div class="section-box">
       <span class="section-tag">FRONT (앞면 디자인 편집)</span>
@@ -162,14 +135,14 @@ footer{max-width:1280px;margin:auto;padding:0 16px 36px;color:var(--muted);font-
 
       <div class="editor-shell">
         <div class="stage">
-          <p class="stage-title">🖼️ 편집 영역 (앞면)</p>
+          <p class="stage-title">🖼️ 로고 편집 영역 (앞면)</p>
           <div class="circle-workspace" id="circleWorkspace">
             <img id="editorLogo" class="draggable-item" alt="편집 중인 로고 (앞면)" hidden draggable="false">
           </div>
-          <p class="balloon-note">원 안에서 끌어서 이동</p>
+          <p class="balloon-note">원 안에서 요소들을 끌어 이동</p>
         </div>
         <div class="stage">
-          <p class="stage-title">🎈 시안 미리보기 (앞면)</p>
+          <p class="stage-title">🎈 풍선 시안 미리보기 (앞면)</p>
           <div class="balloon-wrap">
             <div class="balloon" id="balloon">
               <div class="print-area" id="printArea">
@@ -177,23 +150,21 @@ footer{max-width:1280px;margin:auto;padding:0 16px 36px;color:var(--muted);font-
               </div>
             </div>
           </div>
-          <p class="balloon-note">인쇄 영역 시안</p>
+          <p class="balloon-note">원형 편집 영역 바깥은 인쇄 시안에 표시되지 않습니다.</p>
         </div>
       </div>
 
       <!-- 앞면 전용 세부 조절 영역 -->
-      <div class="sub-controls-wrapper">
-        <h3>앞면 요소 세부 조절 (크기 / 문구 / 삭제)</h3>
-        <div id="frontControlsContainer">
-          <div id="logoControlBlock" class="control-item" style="display:none;">
-            <div class="control-header">
-              <span>🖼️ 앞면 로고 크기</span>
-              <button type="button" class="danger" id="deleteLogoBtn">삭제</button>
-            </div>
-            <div class="range-row">
-              <input id="logoSize" type="range" min="15" max="95" value="58">
-              <span id="sizeLabel">58%</span>
-            </div>
+      <h3 style="font-size:14px; margin-top:20px; border-top:1px solid var(--line); padding-top:12px;">앞면 세부 조절</h3>
+      <div id="frontControlsContainer">
+        <div id="logoControlBlock" class="control-item" style="display:none;">
+          <div class="control-header">
+            <span>🖼️ 앞면 로고 크기</span>
+            <button type="button" class="danger" id="deleteLogoBtn">삭제</button>
+          </div>
+          <div class="range-row">
+            <input id="logoSize" type="range" min="15" max="95" value="58">
+            <span id="sizeLabel">58%</span>
           </div>
         </div>
       </div>
@@ -220,14 +191,14 @@ footer{max-width:1280px;margin:auto;padding:0 16px 36px;color:var(--muted);font-
 
       <div class="editor-shell">
         <div class="stage">
-          <p class="stage-title">🖼️ 편집 영역 (뒷면)</p>
+          <p class="stage-title">🖼️ 로고 편집 영역 (뒷면)</p>
           <div class="circle-workspace" id="backCircleWorkspace">
             <img id="backEditorLogo" class="draggable-item" alt="편집 중인 로고 (뒷면)" hidden draggable="false">
           </div>
-          <p class="balloon-note">원 안에서 끌어서 이동</p>
+          <p class="balloon-note">뒷면 원 안에서 요소들을 끌어 이동</p>
         </div>
         <div class="stage">
-          <p class="stage-title">🎈 시안 미리보기 (뒷면)</p>
+          <p class="stage-title">🎈 풍선 시안 미리보기 (뒷면)</p>
           <div class="balloon-wrap">
             <div class="balloon" id="backBalloon">
               <div class="print-area" id="backPrintArea">
@@ -235,38 +206,34 @@ footer{max-width:1280px;margin:auto;padding:0 16px 36px;color:var(--muted);font-
               </div>
             </div>
           </div>
-          <p class="balloon-note">인쇄 영역 시안</p>
+          <p class="balloon-note">원형 편집 영역 바깥은 인쇄 시안에 표시되지 않습니다.</p>
         </div>
       </div>
 
       <!-- 뒷면 전용 세부 조절 영역 -->
-      <div class="sub-controls-wrapper">
-        <h3>뒷면 요소 세부 조절 (크기 / 문구 / 삭제)</h3>
-        <div id="backControlsContainer">
-          <div id="backLogoControlBlock" class="control-item" style="display:none;">
-            <div class="control-header">
-              <span>🖼️ 뒷면 로고 크기</span>
-              <button type="button" class="danger" id="deleteBackLogoBtn">삭제</button>
-            </div>
-            <div class="range-row">
-              <input id="backLogoSize" type="range" min="15" max="95" value="58">
-              <span id="backSizeLabel">58%</span>
-            </div>
+      <h3 style="font-size:14px; margin-top:20px; border-top:1px solid var(--line); padding-top:12px;">뒷면 세부 조절</h3>
+      <div id="backControlsContainer">
+        <div id="backLogoControlBlock" class="control-item" style="display:none;">
+          <div class="control-header">
+            <span>🖼️ 뒷면 로고 크기</span>
+            <button type="button" class="danger" id="deleteBackLogoBtn">삭제</button>
+          </div>
+          <div class="range-row">
+            <input id="backLogoSize" type="range" min="15" max="95" value="58">
+            <span id="backSizeLabel">58%</span>
           </div>
         </div>
       </div>
     </div>
-
   </div>
 
-  <div class="actions">
-    <button id="processAgain" class="secondary" type="button">배경 제거·검정 변환 다시 적용</button>
+  <div class="actions" style="margin-top:24px;">
+    <button id="processAgain" class="secondary" type="button">앞/뒷면 배경 제거·검정 변환 다시 적용</button>
     <button id="resetPositions" class="secondary" type="button">전체 위치 초기화</button>
   </div>
   <p id="logoStatus" class="status muted">아직 로고를 업로드하지 않았습니다.</p>
 </section>
 
-<!-- 오른쪽 영역: 풍선 및 인쇄 옵션 & 고객 정보 -->
 <section class="card">
   <h2>2. 풍선 및 인쇄 옵션</h2>
 
@@ -344,7 +311,7 @@ footer{max-width:1280px;margin:auto;padding:0 16px 36px;color:var(--muted);font-
 
   <label for="inkPreset" style="margin-top:18px;">실크 인쇄 잉크 색상 선택</label>
   <select id="inkPreset" aria-label="인쇄 잉크 색상 선택"></select>
-  <p class="hint" id="inkHint">선택한 풍선 및 잉크 색상은 미리보기 및 다운로드 이미지에 적용됩니다.</p>
+  <p class="hint" id="inkHint">선택한 풍선 및 잉크 색상은 오른쪽 시안 미리보기 및 다운로드 이미지에 적용됩니다.</p>
 
   <hr class="section-line">
   <h2>3. 고객 정보</h2>
@@ -372,7 +339,6 @@ const balloon=$('balloon'), printArea=$('printArea');
 const backEditor=$('backEditorLogo'), backPrint=$('backBalloonPrint'), backWorkspace=$('backCircleWorkspace');
 const backBalloon=$('backBalloon'), backPrintArea=$('backPrintArea');
 const backEditorSection=$('backEditorSection');
-const designBoxesContainer=$('designBoxesContainer');
 
 let sourceImage=null, processedCanvas=null, processedUrl=null;
 let backSourceImage=null, backProcessedCanvas=null, backProcessedUrl=null;
@@ -439,12 +405,13 @@ document.querySelectorAll('.print-type-btn').forEach(btn => {
     selectedPrintType = e.target.getAttribute('data-type');
 
     const isDouble = selectedPrintType.includes('양면');
-    backEditorSection.style.display = isDouble ? 'flex' : 'none';
+    backEditorSection.style.display = isDouble ? 'block' : 'none';
 
+    // 양면 모드 시 body 클래스 토글 (전체 너비 확장을 위함)
     if(isDouble) {
-      designBoxesContainer.classList.add('double-side');
+      document.body.classList.add('double-sided-mode');
     } else {
-      designBoxesContainer.classList.remove('double-side');
+      document.body.classList.remove('double-sided-mode');
     }
 
     syncPositions();
@@ -494,7 +461,7 @@ function syncPositions(){
     $('backSizeLabel').textContent=backLogoSize+'%';
   }
 
-  const scale = workspaceRect.width / 240 || 1;
+  const scale = workspaceRect.width / 260 || 1;
   
   items.forEach(item => {
     if(item.el){
@@ -584,7 +551,8 @@ function renderControlUI(item){
   div.id = `control-item-${item.id}`;
 
   const isText = item.type === 'text';
-  const title = isText ? `✍️ 텍스트 #${item.id}` : `✨ 아이콘 (${item.text})`;
+  const sideLabel = item.side === 'back' ? '[뒷면]' : '[앞면]';
+  const title = isText ? `✍️ ${sideLabel} 텍스트 #${item.id}` : `✨ ${sideLabel} 아이콘 (${item.text})`;
 
   div.innerHTML = `
     <div class="control-header">
@@ -601,7 +569,7 @@ function renderControlUI(item){
       </select>
     </div>
     ` : ''}
-    <div class="range-row" style="margin-top:6px;">
+    <div class="range-row" style="margin-top:8px;">
       <span style="font-size:12px;">크기</span>
       <input type="range" id="range-size-${item.id}" min="10" max="70" value="${item.size}">
       <span id="label-size-${item.id}">${item.size}px</span>
@@ -883,7 +851,7 @@ function renderLogoWorkspaceOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, tar
     ctx.save();
     const itemCx = centerX + (item.x / 100 - 0.5) * (circleRadius * 2);
     const itemCy = centerY + (item.y / 100 - 0.5) * (circleRadius * 2);
-    const fontSize = item.size * ((circleRadius * 2) / 240);
+    const fontSize = item.size * ((circleRadius * 2) / 260);
     let fontName = 'sans-serif';
     if (item.font === 'font-gungseo') fontName = 'Gungsuh, Batang, serif';
     if (item.font === 'font-round') fontName = 'Gothic A1, cursive, sans-serif';
@@ -920,8 +888,8 @@ function renderBalloonOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetIte
   ctx.fillStyle = sh;
   ctx.fillRect(bx, by, bw, bh);
 
-  const workspaceWidth = workspace.getBoundingClientRect().width || 240;
-  const balloonWidth = balloon.getBoundingClientRect().width || 230;
+  const workspaceWidth = workspace.getBoundingClientRect().width || 260;
+  const balloonWidth = balloon.getBoundingClientRect().width || 250;
   const scaleFactor = bw / balloonWidth;
   const printDiameter = workspaceWidth * 0.52 * scaleFactor;
   const printCenterX = bx + bw / 2;
