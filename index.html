@@ -43,11 +43,14 @@ button:focus,input:focus,select:focus{outline:2px solid #8ab4ff;outline-offset:1
 .balloon:after{content:"";position:absolute;bottom:-1%;left:45%;width:10%;height:9%;background:var(--balloon,#fff);clip-path:polygon(0 0,100% 0,50% 100%)}
 .print-area{position:absolute;left:50%;top:47%;width:52%;aspect-ratio:1;border-radius:50%;overflow:hidden;transform:translate(-50%,-50%);z-index:1;pointer-events:none}
 
-/* 편집 가능한 객체들 - 편집 창에서는 무조건 000000 검정색 */
+/* 편집 가능한 객체들 */
 .draggable-item{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);touch-action:none;user-select:none;cursor:grab;display:inline-block;white-space:nowrap;line-height:1;color:#000000 !important;}
 .draggable-item.dragging{cursor:grabbing}
 #editorLogo{object-fit:contain;max-width:none}
 #editorLogo[hidden]{display:none !important;}
+#balloonPrint{position:absolute;object-fit:contain;pointer-events:none;transform:translate(-50%,-50%);}
+#balloonPrint[hidden]{display:none !important;}
+
 .text-item{font-weight:bold;pointer-events:auto}
 .icon-item{line-height:1;display:flex;align-items:center;justify-content:center;pointer-events:auto}
 
@@ -59,7 +62,7 @@ button:focus,input:focus,select:focus{outline:2px solid #8ab4ff;outline-offset:1
 /* 미리보기 인쇄 요소 */
 .print-item{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;white-space:nowrap;line-height:1;display:inline-block}
 
-/* 아이콘 버튼 툴바 - 선명한 검정색 적용 */
+/* 아이콘 버튼 툴바 */
 .icon-toolbar{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0;background:#f8fafc;padding:10px;border-radius:10px;border:1px solid var(--line)}
 .icon-btn{padding:8px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:18px;color:#000000;display:flex;align-items:center;justify-content:center;transition:all 0.2s;font-weight:bold;}
 .icon-btn:hover{background:#edf0f4;border-color:#b0b8c5}
@@ -107,7 +110,6 @@ footer{max-width:1180px;margin:auto;padding:0 16px 28px;color:var(--muted);font-
     <div class="stage">
       <p class="stage-title">로고 편집 영역</p>
       <div class="circle-workspace" id="circleWorkspace">
-        <!-- 초기 로드 시 hidden 속성 추가로 깨진 이미지 미표시 -->
         <img id="editorLogo" class="draggable-item" alt="편집 중인 로고" hidden draggable="false">
       </div>
       <p class="balloon-note">원 안에서 요소들을 끌어 이동</p>
@@ -125,7 +127,7 @@ footer{max-width:1180px;margin:auto;padding:0 16px 28px;color:var(--muted);font-
     </div>
   </div>
 
-  <!-- 꾸밈 아이콘 버튼 영역 (단색/선명한 아이콘) -->
+  <!-- 꾸밈 아이콘 버튼 영역 -->
   <label style="margin-top:16px;">꾸밈 아이콘 추가 (실크인쇄용 아이콘)</label>
   <div class="icon-toolbar">
     <button type="button" class="icon-btn" data-icon="♥" title="하트">♥</button>
@@ -209,10 +211,11 @@ let items = [];
 let nextId = 1;
 
 function syncPositions(){
-  // 1. 로고 위치 및 크기 비율 조정
   const logoSize=Number($('logoSize').value);
+  
+  // 1. 업로드 로고 동기화 (편집 창 & 미리보기 창 모두 완벽한 연동)
   editor.style.width=logoSize+'%';
-  editor.style.height='auto'; // 비율 유지
+  editor.style.height='auto';
   editor.style.left=logoX+'%';
   editor.style.top=logoY+'%';
 
@@ -226,23 +229,23 @@ function syncPositions(){
   print.style.left=logoX+'%';
   print.style.top=logoY+'%';
   print.style.width=logoSize+'%';
-  print.style.height='auto'; // 비율 유지
+  print.style.height='auto';
   $('sizeLabel').textContent=logoSize+'%';
 
-  // 2. 추가 텍스트 및 아이콘 위치/크기 정확히 50% 비율 축소
+  // 2. 추가 텍스트 및 아이콘 동기화
   const scale = workspaceRect.width / 260 || 1;
   items.forEach(item => {
     if(item.el){
       item.el.style.left = item.x + '%';
       item.el.style.top = item.y + '%';
       item.el.style.fontSize = (item.size * scale) + 'px';
-      item.el.style.color = '#000000'; // 편집 영역은 무조건 절대검정
+      item.el.style.color = '#000000';
     }
     if(item.printEl){
       item.printEl.style.left = item.x + '%';
       item.printEl.style.top = item.y + '%';
-      item.printEl.style.fontSize = (item.size * 0.5 * scale) + 'px'; // 정확히 50% 크기
-      item.printEl.style.color = inkColor; // 미리보기에는 잉크색 반영
+      item.printEl.style.fontSize = (item.size * 0.5 * scale) + 'px';
+      item.printEl.style.color = inkColor;
     }
   });
 }
@@ -277,7 +280,6 @@ function createItem(type, content, fontClass, defaultSize){
     y: 50
   };
 
-  // 편집 원 요소 (절대검정)
   const el = document.createElement('div');
   el.className = `draggable-item ${type === 'text' ? 'text-item' : 'icon-item'} ${fontClass}`;
   el.textContent = content;
@@ -285,7 +287,6 @@ function createItem(type, content, fontClass, defaultSize){
   workspace.appendChild(el);
   item.el = el;
 
-  // 미리보기 요소
   const printEl = document.createElement('div');
   printEl.className = `print-item ${fontClass}`;
   printEl.textContent = content;
@@ -377,6 +378,7 @@ $('deleteLogoBtn').addEventListener('click', () => {
   $('logoStatus').textContent = '로고가 삭제되었습니다.';
 });
 
+// 드래그 제어 (로고와 모든 요소를 지원)
 function makeDraggable(element, itemObj){
   let dragging = false;
   let lastX = 0, lastY = 0;
@@ -393,19 +395,15 @@ function makeDraggable(element, itemObj){
   element.addEventListener('pointermove', e => {
     if(!dragging) return;
     const r = workspace.getBoundingClientRect();
-    let targetX = itemObj ? itemObj.x : logoX;
-    let targetY = itemObj ? itemObj.y : logoY;
-
-    targetX = Math.max(0, Math.min(100, targetX + (e.clientX - lastX) / r.width * 100));
-    targetY = Math.max(0, Math.min(100, targetY + (e.clientY - lastY) / r.height * 100));
-
+    
     if(itemObj){
-      itemObj.x = targetX;
-      itemObj.y = targetY;
+      itemObj.x = Math.max(0, Math.min(100, itemObj.x + (e.clientX - lastX) / r.width * 100));
+      itemObj.y = Math.max(0, Math.min(100, itemObj.y + (e.clientY - lastY) / r.height * 100));
     } else {
-      logoX = targetX;
-      logoY = targetY;
+      logoX = Math.max(0, Math.min(100, logoX + (e.clientX - lastX) / r.width * 100));
+      logoY = Math.max(0, Math.min(100, logoY + (e.clientY - lastY) / r.height * 100));
     }
+    
     lastX = e.clientX;
     lastY = e.clientY;
     syncPositions();
@@ -416,7 +414,7 @@ function makeDraggable(element, itemObj){
   element.addEventListener('pointercancel', stopDrag);
 }
 
-// 이미지 절대 검정(#000000)으로 변환
+// 이미지 업로드 로고 깔끔한 단색 이진화(Binary Thresholding) 처리
 function renderProcessed(){
   if(!sourceImage) return;
   const w=sourceImage.naturalWidth, h=sourceImage.naturalHeight;
@@ -424,14 +422,21 @@ function renderProcessed(){
   const ctx=c.getContext('2d', {willReadFrequently:true}); ctx.drawImage(sourceImage,0,0);
   const im=ctx.getImageData(0,0,w,h), d=im.data;
 
+  // 고품질 Threshold 알고리즘 (지저분한 노이즈 완전 제거)
   for(let i=0;i<d.length;i+=4){
     const r=d[i], g=d[i+1], b=d[i+2], a=d[i+3];
-    // 밝은 배경색 제거
-    if(r>230 && g>230 && b>230){
-      d[i+3]=0;
-    }else if(a > 20){
-      // 채도/명도 상관없이 무조건 절대 검정(#000000)으로 변경
-      d[i]=0; d[i+1]=0; d[i+2]=0; d[i+3]=255;
+    // 휘도(밝기) 계산
+    const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+
+    // 밝은 배경(휘도 200 이상)이거나 거의 투명한 경우 배경으로 처리
+    if(brightness > 200 || a < 40){
+      d[i+3] = 0; // 완전 투명
+    } else {
+      // 로고 선/도안 부분: 절대 검정(#000000)으로 선명하게 단색화
+      d[i] = 0;
+      d[i+1] = 0;
+      d[i+2] = 0;
+      d[i+3] = 255;
     }
   }
   ctx.putImageData(im,0,0);
@@ -448,11 +453,11 @@ function renderProcessed(){
       syncPositions();
     };
     editor.src=processedUrl;
-    $('logoStatus').textContent='로고가 절대 검정(#000000) 단색으로 변환되었습니다.';
+    $('logoStatus').textContent='로고가 깔끔한 선명의 절대 검정(#000000)으로 처리되었습니다.';
   },'image/png');
 }
 
-// 풍선 미리보기용 실크 인쇄 색상 적용
+// 미리보기용 실크 인쇄 색상 변환
 function updatePrintImage(){
   if(!processedCanvas) return;
   const c=document.createElement('canvas');
@@ -482,6 +487,7 @@ function updatePrintImage(){
   },'image/png');
 }
 
+// 로고 이미지에 드래그 이벤트 연결
 makeDraggable(editor, null);
 
 $('logoFile').addEventListener('change', e=>{
@@ -516,7 +522,7 @@ function setInkColor(v){
 $('inkColor').addEventListener('input', e=>{ $('inkPreset').value=e.target.value; setInkColor(e.target.value); });
 $('inkPreset').addEventListener('change', e=>setInkColor(e.target.value));
 
-// PNG 다운로드 시 비율 유지 적용
+// PNG 시안 다운로드
 $('downloadPreview').addEventListener('click', ()=>{
   const c=document.createElement('canvas'); c.width=900; c.height=1000;
   const ctx=c.getContext('2d');
@@ -543,7 +549,6 @@ $('downloadPreview').addEventListener('click', ()=>{
   ctx.arc(printCenterX, printCenterY, printDiameter/2, 0, Math.PI*2);
   ctx.clip();
 
-  // 1. 로고 비율 원본 유지 렌더링
   if(processedCanvas && !editor.hidden){
     const temp=document.createElement('canvas');
     temp.width=processedCanvas.width; temp.height=processedCanvas.height;
@@ -558,7 +563,6 @@ $('downloadPreview').addEventListener('click', ()=>{
     ctx.drawImage(temp, logoCx-logoWidth/2, logoCy-logoHeight/2, logoWidth, logoHeight);
   }
 
-  // 2. 텍스트 및 아이콘 정확한 비율 축소 적용
   items.forEach(item => {
     ctx.save();
     const itemCx = printCenterX + (item.x/100 - .5) * printDiameter;
