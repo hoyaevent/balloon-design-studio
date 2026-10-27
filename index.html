@@ -1,1 +1,807 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>만봉프린트 | 인쇄풍선 시안 제작</title>
+<!-- 폰트 불러오기 (고딕, 궁서, 둥근볼드체) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gungsuh&family=Gothic+A1:wght@700&family=Nanum+Gothic:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#171717;--muted:#667085;--line:#d9dee7;--bg:#f4f6f9;--card:#fff;--accent:#202938;--danger:#dc2626}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#20242b;font-family:Arial,"Malgun Gothic",sans-serif}
+header{background:#fff;border-bottom:1px solid var(--line);padding:22px 18px}
+.header-inner,main{max-width:1180px;margin:auto}
+h1{font-size:clamp(22px,3vw,30px);margin:0 0 8px}
+p{line-height:1.55}
+.muted,.hint{color:var(--muted);font-size:13px}
+main{padding:22px 16px 48px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+.card{background:var(--card);border:1px solid #e4e7ec;border-radius:16px;padding:20px;min-width:0}
+h2{font-size:19px;margin:0 0 14px}
+h3{font-size:15px;margin:20px 0 8px}
+label{display:block;font-size:14px;font-weight:700;margin:14px 0 7px}
+input,select,textarea,button{font:inherit}
+input[type=text],input[type=tel],input[type=email],input[type=number],select,textarea,input[type=file]{width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;background:#fff}
+button{border:0;border-radius:10px;padding:12px 16px;background:var(--accent);color:#fff;cursor:pointer;font-weight:700}
+button.secondary{background:#edf0f4;color:#222}
+button.danger{background:#fee2e2;color:var(--danger);padding:8px 12px;font-size:13px}
+button.danger:hover{background:#fca5a5}
+button:focus,input:focus,select:focus{outline:2px solid #8ab4ff;outline-offset:1px}
 
+/* 인쇄 방식 카테고리 탭 버튼 */
+.print-type-tabs{display:grid;grid-template-columns:repeat(4, 1fr);gap:8px;margin-bottom:16px;}
+.print-type-btn{background:#edf0f4;color:#333;padding:12px 8px;border-radius:10px;font-size:14px;border:1px solid var(--line);cursor:pointer;transition:all 0.2s;}
+.print-type-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:bold;}
+
+.editor-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.stage{background:#f0f3f7;border-radius:12px;padding:12px;text-align:center;min-width:0}
+.stage-title{font-size:13px;font-weight:700;margin:0 0 10px}
+.circle-workspace{width:min(100%,260px);aspect-ratio:1;border:2px solid #343b48;border-radius:50%;background:#fff;position:relative;margin:auto;overflow:hidden;touch-action:none}
+
+.balloon-wrap{width:min(100%,260px);aspect-ratio:.82;margin:auto;position:relative}
+.balloon{position:absolute;inset:2% 2% 7%;border-radius:49% 49% 45% 45% / 40% 40% 57% 57%;background:radial-gradient(ellipse at 29% 20%,#ffffffd9 0%,#ffffff40 14%,transparent 32%),radial-gradient(ellipse at 68% 75%,#0000000b,transparent 55%),var(--balloon,#fff);border:1px solid #d4d8df;box-shadow:inset -12px -14px 20px #0000000a,0 10px 18px #0000000b;overflow:hidden}
+.balloon:after{content:"";position:absolute;bottom:-1%;left:45%;width:10%;height:9%;background:var(--balloon,#fff);clip-path:polygon(0 0,100% 0,50% 100%)}
+.print-area{position:absolute;left:50%;top:47%;width:52%;aspect-ratio:1;border-radius:50%;overflow:hidden;transform:translate(-50%,-50%);z-index:1;pointer-events:none}
+
+/* 편집 가능한 객체들 */
+.draggable-item{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);touch-action:none;user-select:none;cursor:grab;display:inline-block;white-space:nowrap;line-height:1;color:#000000 !important;}
+.draggable-item.dragging{cursor:grabbing}
+#editorLogo{object-fit:contain;max-width:none}
+#editorLogo[hidden]{display:none !important;}
+#balloonPrint{position:absolute;object-fit:contain;pointer-events:none;transform:translate(-50%,-50%);}
+#balloonPrint[hidden]{display:none !important;}
+
+.text-item{font-weight:bold;pointer-events:auto}
+.icon-item{line-height:1;display:flex;align-items:center;justify-content:center;pointer-events:auto}
+
+/* 폰트 종류 */
+.font-gothic{font-family:'Nanum Gothic', 'Malgun Gothic', sans-serif;}
+.font-gungseo{font-family:'Gungsuh', 'Batang', serif;}
+.font-round{font-family:'Gothic A1', cursive, sans-serif; font-weight: 900;}
+
+/* 미리보기 인쇄 요소 */
+.print-item{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;white-space:nowrap;line-height:1;display:inline-block}
+
+/* 아이콘 버튼 툴바 */
+.icon-toolbar{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0;background:#f8fafc;padding:10px;border-radius:10px;border:1px solid var(--line)}
+.icon-btn{padding:8px 14px;background:#fff;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:18px;color:#000000;display:flex;align-items:center;justify-content:center;transition:all 0.2s;font-weight:bold;}
+.icon-btn:hover{background:#edf0f4;border-color:#b0b8c5}
+
+/* 요소 조절 제어판 아이템 */
+.control-item{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:10px}
+.control-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.control-header span{font-size:13px;font-weight:bold}
+.control-row{display:flex;gap:8px;align-items:center;margin-top:6px}
+.control-row input[type=text]{flex:1}
+.control-row select{width:110px}
+
+.balloon-note{font-size:12px;color:var(--muted);margin:8px 0 0}
+.range-row{display:flex;gap:10px;align-items:center}
+.range-row input{flex:1;min-width:0}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.actions button{flex:1}
+.section-line{border:0;border-top:1px solid #edf0f4;margin:20px 0}
+.notice{background:#fff8e6;border:1px solid #f4df9b;padding:12px;border-radius:10px;font-size:13px;line-height:1.55;margin-top:14px}
+.status{font-size:13px;margin-top:10px;white-space:pre-wrap}
+footer{max-width:1180px;margin:auto;padding:0 16px 28px;color:var(--muted);font-size:12px}
+@media(max-width:760px){main{padding:14px 10px 32px}.layout{grid-template-columns:1fr}.card{padding:16px}.editor-shell{grid-template-columns:1fr 1fr;gap:8px}.stage{padding:8px}.circle-workspace{width:100%}.balloon-wrap{width:100%}.print-type-tabs{grid-template-columns:repeat(2, 1fr);}}
+@media(max-width:380px){.editor-shell{grid-template-columns:1fr}.circle-workspace,.balloon-wrap{max-width:240px}}
+</style>
+</head>
+<body>
+<header><div class="header-inner">
+  <h1>만봉프린트 인쇄풍선 시안 제작</h1>
+  <div class="muted">로고, 텍스트, 꾸밈 아이콘을 편집하고 풍선 시안을 확인하세요.</div>
+</div></header>
+<main>
+<div class="layout">
+<section class="card">
+  <h2>1. 로고 및 문구 편집</h2>
+  <p class="hint">로고 이미지를 올리거나 텍스트, 아이콘을 추가하여 시안을 꾸며보세요. 편집 원 안에서 마우스로 자유롭게 위치를 이동시킬 수 있습니다.</p>
+  
+  <label for="logoFile">로고 이미지 업로드 (JPG / PNG / WEBP)</label>
+  <input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp">
+  
+  <div style="margin-top:10px;">
+    <button id="addTextBtn" type="button" class="secondary" style="width:100%">+ 텍스트 추가 (최대 3개)</button>
+  </div>
+
+  <div class="editor-shell" style="margin-top:14px">
+    <div class="stage">
+      <p class="stage-title">로고 편집 영역</p>
+      <div class="circle-workspace" id="circleWorkspace">
+        <img id="editorLogo" class="draggable-item" alt="편집 중인 로고" hidden draggable="false">
+      </div>
+      <p class="balloon-note">원 안에서 요소들을 끌어 이동</p>
+    </div>
+    <div class="stage">
+      <p class="stage-title">풍선 시안 미리보기</p>
+      <div class="balloon-wrap">
+        <div class="balloon" id="balloon">
+          <div class="print-area" id="printArea">
+            <img id="balloonPrint" alt="풍선 인쇄 미리보기" hidden>
+          </div>
+        </div>
+      </div>
+      <p class="balloon-note">원형 편집 영역 바깥은 인쇄 시안에 표시되지 않습니다.</p>
+    </div>
+  </div>
+
+  <!-- 꾸밈 아이콘 버튼 영역 -->
+  <label style="margin-top:16px;">꾸밈 아이콘 추가</label>
+  <div class="icon-toolbar">
+    <button type="button" class="icon-btn" data-icon="♥" title="하트">♥</button>
+    <button type="button" class="icon-btn" data-icon="★" title="별">★</button>
+    <button type="button" class="icon-btn" data-icon="✦" title="반짝임">✦</button>
+    <button type="button" class="icon-btn" data-icon="●" title="동그라미">●</button>
+  </div>
+
+  <hr class="section-line">
+  <h3>요소 세부 조절 (크기 / 문구 / 삭제)</h3>
+  <div id="controlsContainer">
+    <!-- 로고 조절 바 -->
+    <div id="logoControlBlock" class="control-item" style="display:none;">
+      <div class="control-header">
+        <span>🖼️ 업로드 로고</span>
+        <button type="button" class="danger" id="deleteLogoBtn">삭제</button>
+      </div>
+      <div class="range-row">
+        <input id="logoSize" type="range" min="15" max="95" value="58">
+        <span id="sizeLabel">58%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button id="processAgain" class="secondary" type="button">흰 배경 제거·검정 변환 다시 적용</button>
+    <button id="resetPositions" class="secondary" type="button">전체 위치 초기화</button>
+  </div>
+  <p id="logoStatus" class="status muted">아직 로고를 업로드하지 않았습니다.</p>
+</section>
+
+<section class="card">
+  <h2>2. 풍선 및 인쇄 옵션</h2>
+
+  <!-- 인쇄 방식 선택 카테고리 버튼 -->
+  <label>인쇄 방식 선택</label>
+  <div class="print-type-tabs">
+    <button type="button" class="print-type-btn active" data-type="1도 단면">1도 단면</button>
+    <button type="button" class="print-type-btn" data-type="1도 양면">1도 양면</button>
+    <button type="button" class="print-type-btn" data-type="2도 단면">2도 단면</button>
+    <button type="button" class="print-type-btn" data-type="2도 양면">2도 양면</button>
+  </div>
+
+  <!-- 제작 수량 선택 -->
+  <label for="quantity">제작 수량 선택 *</label>
+  <select id="quantity">
+    <option value="100">100개</option>
+    <option value="200">200개</option>
+    <option value="300">300개</option>
+    <option value="500">500개</option>
+    <option value="1000" selected>1,000개</option>
+    <option value="etc">기타 수량 상담</option>
+  </select>
+
+  <!-- 풍선 색상 선택 -->
+  <label for="balloonPreset" style="margin-top:14px;">풍선 색상 선택</label>
+  <select id="balloonPreset" aria-label="풍선 색상 선택">
+    <optgroup label="Standard Colors (스탠다드)">
+      <option value="#ffffff" selected>White (화이트)</option>
+      <option value="#fff100">Yellow (노랑)</option>
+      <option value="#ffb6c1">Pink (핑크)</option>
+      <option value="#d10069">Fuchsia (푸시아)</option>
+      <option value="#e50012">Red (빨강)</option>
+      <option value="#ff6600">Orange (주황)</option>
+      <option value="#009944">Green (초록)</option>
+      <option value="#005a36">Dark Green (다크그린)</option>
+      <option value="#70c0e8">Light Blue (연하늘)</option>
+      <option value="#40e0d0">Mint (민트)</option>
+      <option value="#00a0e9">Aqua (아쿠아)</option>
+      <option value="#003399">Blue (파랑)</option>
+      <option value="#001d5a">Dark Blue (다크블루)</option>
+      <option value="#4b0082">Lavender/Purple (보라)</option>
+      <option value="#111111">Black (검정)</option>
+    </optgroup>
+    <optgroup label="Pearl Colors (펄)">
+      <option value="#f8f9fa">Pearl White (펄 화이트)</option>
+      <option value="#fffdd0">Pearl Cream (펄 크림)</option>
+      <option value="#ffee75">Pearl Yellow (펄 노랑)</option>
+      <option value="#ffb3ba">Pearl Pink (펄 핑크)</option>
+      <option value="#ffb380">Pearl Peach (펄 피치)</option>
+      <option value="#ff7f50">Pearl Orange (펄 주황)</option>
+      <option value="#e63946">Pearl Red (펄 빨강)</option>
+      <option value="#b57edc">Pearl Lavender (펄 라벤더)</option>
+      <option value="#8a2be2">Pearl Purple (펄 퍼플)</option>
+      <option value="#87ceeb">Pearl Light Blue (펄 연하늘)</option>
+      <option value="#4682b4">Pearl Blue (펄 파랑)</option>
+      <option value="#98ff98">Pearl Mint/Green (펄 연두)</option>
+      <option value="#ffd700">Pearl Gold (펄 골드)</option>
+      <option value="#c0c0c0">Pearl Silver (펄 실버)</option>
+      <option value="#222222">Pearl Black (펄 검정)</option>
+    </optgroup>
+    <optgroup label="Pastel & Pastel Matt Colors (파스텔)">
+      <option value="#fcd5ce">Pastel Peach (파스텔 피치)</option>
+      <option value="#fde2e4">Pastel Yellow (파스텔 노랑)</option>
+      <option value="#ffcad4">Pastel Pink (파스텔 핑크)</option>
+      <option value="#e2ece9">Pastel Lavender (파스텔 라벤더)</option>
+      <option value="#d8e2dc">Pastel Lime (파스텔 라임)</option>
+      <option value="#b1e5d9">Pastel Mint (파스텔 민트)</option>
+      <option value="#a2d2ff">Pastel Blue (파스텔 블루)</option>
+      <option value="#d4a373">Pastel Beige (파스텔 베이지)</option>
+      <option value="#6b705c">Pastel Olive (파스텔 올리브)</option>
+      <option value="#4a3b32">Pastel Brown (파스텔 브라운)</option>
+    </optgroup>
+    <optgroup label="Crystal & Chrome Colors (크리스탈 & 크롬)">
+      <option value="#ffffffd0">Crystal Clear (크리스탈 투명)</option>
+      <option value="#d4af37">Chrome Gold (크롬 골드)</option>
+      <option value="#a8a8a8">Chrome Silver (크롬 실버)</option>
+      <option value="#2a6f97">Chrome Blue (크롬 블루)</option>
+      <option value="#1b4332">Chrome Green (크롬 그린)</option>
+      <option value="#5a189a">Chrome Purple (크롬 퍼플)</option>
+    </optgroup>
+  </select>
+
+  <!-- 실크 인쇄 잉크 색상 선택 -->
+  <label for="inkPreset" style="margin-top:14px;">실크 인쇄 잉크 색상 선택</label>
+  <select id="inkPreset" aria-label="인쇄 잉크 색상 선택">
+  </select>
+  <p class="hint" id="inkHint">선택한 풍선 및 잉크 색상은 오른쪽 시안 미리보기 및 다운로드 이미지에 적용됩니다.</p>
+
+  <hr class="section-line">
+  <h2>3. 고객 정보 및 파일</h2>
+  <label for="customerName">고객명 / 업체명 *</label><input id="customerName" type="text" autocomplete="name" placeholder="고객명 또는 업체명">
+  <label for="phone">연락처 *</label><input id="phone" type="tel" autocomplete="tel" placeholder="예: 010-1234-5678">
+  <label for="email">이메일 (선택)</label><input id="email" type="email" autocomplete="email" placeholder="회신 받을 이메일">
+  <label for="originalFile">인쇄 원본 파일 첨부 (AI / PDF / EPS / SVG 등)</label>
+  <input id="originalFile" type="file" accept=".ai,.pdf,.eps,.svg,.png,.jpg,.jpeg,.webp,application/pdf,image/png,image/jpeg,image/webp">
+  <p class="hint">원본 파일은 시안 미리보기용 이미지와 별도로 첨부할 수 있도록 준비했습니다.</p>
+  <label for="requestMemo">요청 사항</label><textarea id="requestMemo" rows="3" placeholder="인쇄 위치, 색상, 수량 등 추가 요청 사항"></textarea>
+  <div class="notice"><strong>중요:</strong> 현재 화면은 미리보기용 1차 버전입니다. 제출 버튼은 전송 테스트용입니다.</div>
+  
+  <!-- 새로 분리된 파일 다운로드 버튼 영역 -->
+  <div class="actions">
+    <button id="downloadLogoPNG" type="button" class="secondary">1. 로고 도안 PNG 저장 (#000000)</button>
+    <button id="downloadPreviewJPG" type="button">2. 풍선 시안 JPG 저장</button>
+  </div>
+  <p id="submitStatus" class="status muted">접수 및 이메일 전송은 Supabase와 이메일 서비스를 연결한 뒤 활성화됩니다.</p>
+</section>
+</div>
+</main>
+<footer>※ 화면의 풍선은 예상 시안용 모형이며, 실제 풍선 재질·조명·잉크·인쇄 공정에 따라 결과가 달라질 수 있습니다.</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+const editor=$('editorLogo'), print=$('balloonPrint'), workspace=$('circleWorkspace');
+const balloon=$('balloon'), printArea=$('printArea');
+
+let sourceImage=null, processedCanvas=null, processedUrl=null;
+let logoX=50, logoY=50;
+let objectUrl=null;
+let inkColor='#000000';
+let selectedPrintType = '1도 단면';
+
+let items = [];
+let nextId = 1;
+
+const allInkOptions = [
+  { value: '#000000', text: '검정 (Black)' },
+  { value: '#ffffff', text: '흰색 (White)' },
+  { value: '#e53935', text: '빨강 (Red)' },
+  { value: '#1565c0', text: '파랑 (Blue)' },
+  { value: '#ffd600', text: '노랑 (Yellow)' },
+  { value: '#008a50', text: '초록 (Green)' },
+  { value: '#7b1fa2', text: '보라 (Purple)' },
+  { value: '#d4af37', text: '골드 (Gold)' },
+  { value: '#c0c0c0', text: '실버 (Silver)' }
+];
+
+const basicInkOptions = [
+  { value: '#000000', text: '검정 (Black)' },
+  { value: '#ffffff', text: '흰색 (White)' }
+];
+
+function updateInkOptions() {
+  const qtyVal = $('quantity').value;
+  const isUnder1000 = ['100', '200', '300', '500'].includes(qtyVal);
+  const select = $('inkPreset');
+  const currentVal = select.value;
+  
+  select.innerHTML = '';
+  const optionsToUse = isUnder1000 ? basicInkOptions : allInkOptions;
+  
+  optionsToUse.forEach(opt => {
+    const el = document.createElement('option');
+    el.value = opt.value;
+    el.textContent = opt.text;
+    select.appendChild(el);
+  });
+
+  if (isUnder1000) {
+    $('inkHint').textContent = '※ 1,000개 미만 제작 수량은 검정 및 흰색 잉크만 선택 가능합니다.';
+    if (currentVal !== '#000000' && currentVal !== '#ffffff') {
+      select.value = '#000000';
+    } else {
+      select.value = currentVal;
+    }
+  } else {
+    $('inkHint').textContent = '※ 선택한 풍선 및 잉크 색상은 오른쪽 시안 미리보기 및 다운로드 이미지에 적용됩니다.';
+    select.value = currentVal || '#000000';
+  }
+  
+  setInkColor(select.value);
+}
+
+document.querySelectorAll('.print-type-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    document.querySelectorAll('.print-type-btn').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    selectedPrintType = e.target.getAttribute('data-type');
+  });
+});
+
+$('quantity').addEventListener('change', updateInkOptions);
+
+function syncPositions(){
+  const logoSize=Number($('logoSize').value);
+  
+  editor.style.width=logoSize+'%';
+  editor.style.height='auto';
+  editor.style.left=logoX+'%';
+  editor.style.top=logoY+'%';
+
+  const workspaceRect=workspace.getBoundingClientRect();
+  const balloonRect=balloon.getBoundingClientRect();
+  if(workspaceRect.width && balloonRect.width){
+    const printDiameter=workspaceRect.width*0.52;
+    printArea.style.width=(printDiameter/balloonRect.width*100)+'%';
+  }
+
+  print.style.left=logoX+'%';
+  print.style.top=logoY+'%';
+  print.style.width=logoSize+'%';
+  print.style.height='auto';
+  $('sizeLabel').textContent=logoSize+'%';
+
+  const scale = workspaceRect.width / 260 || 1;
+  items.forEach(item => {
+    if(item.el){
+      item.el.style.left = item.x + '%';
+      item.el.style.top = item.y + '%';
+      item.el.style.fontSize = (item.size * scale) + 'px';
+      item.el.style.color = '#000000';
+    }
+    if(item.printEl){
+      item.printEl.style.left = item.x + '%';
+      item.printEl.style.top = item.y + '%';
+      item.printEl.style.fontSize = (item.size * 0.5 * scale) + 'px';
+      item.printEl.style.color = inkColor;
+    }
+  });
+}
+
+$('addTextBtn').addEventListener('click', () => {
+  const textCount = items.filter(i => i.type === 'text').length;
+  if(textCount >= 3){
+    alert('텍스트는 최대 3개까지 추가할 수 있습니다.');
+    return;
+  }
+  createItem('text', '문구추가', 'font-gothic', 22);
+});
+
+document.querySelectorAll('.icon-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const iconChar = e.currentTarget.getAttribute('data-icon');
+    createItem('icon', iconChar, 'font-gothic', 28);
+  });
+});
+
+function createItem(type, content, fontClass, defaultSize){
+  const id = nextId++;
+  const item = {
+    id,
+    type,
+    text: content,
+    font: fontClass,
+    size: defaultSize,
+    x: 50,
+    y: 50
+  };
+
+  const el = document.createElement('div');
+  el.className = `draggable-item ${type === 'text' ? 'text-item' : 'icon-item'} ${fontClass}`;
+  el.textContent = content;
+  el.style.color = '#000000';
+  workspace.appendChild(el);
+  item.el = el;
+
+  const printEl = document.createElement('div');
+  printEl.className = `print-item ${fontClass}`;
+  printEl.textContent = content;
+  printEl.style.color = inkColor;
+  printArea.appendChild(printEl);
+  item.printEl = printEl;
+
+  makeDraggable(el, item);
+  items.push(item);
+
+  renderControlUI(item);
+  syncPositions();
+}
+
+function renderControlUI(item){
+  const container = $('controlsContainer');
+  const div = document.createElement('div');
+  div.className = 'control-item';
+  div.id = `control-item-${item.id}`;
+
+  const isText = item.type === 'text';
+  const title = isText ? `✍️ 텍스트 #${item.id}` : `✨ 아이콘 (${item.text})`;
+
+  div.innerHTML = `
+    <div class="control-header">
+      <span>${title}</span>
+      <button type="button" class="danger" onclick="deleteItem(${item.id})">삭제</button>
+    </div>
+    ${isText ? `
+    <div class="control-row">
+      <input type="text" id="input-text-${item.id}" value="${item.text}" placeholder="문구 입력">
+      <select id="select-font-${item.id}">
+        <option value="font-gothic" ${item.font==='font-gothic'?'selected':''}>고딕체</option>
+        <option value="font-gungseo" ${item.font==='font-gungseo'?'selected':''}>궁서체</option>
+        <option value="font-round" ${item.font==='font-round'?'selected':''}>둥근볼드체</option>
+      </select>
+    </div>
+    ` : ''}
+    <div class="range-row" style="margin-top:8px;">
+      <span style="font-size:12px;">크기</span>
+      <input type="range" id="range-size-${item.id}" min="10" max="70" value="${item.size}">
+      <span id="label-size-${item.id}">${item.size}px</span>
+    </div>
+  `;
+
+  container.appendChild(div);
+
+  if(isText){
+    $(`input-text-${item.id}`).addEventListener('input', (e) => {
+      item.text = e.target.value || '';
+      item.el.textContent = item.text;
+      item.printEl.textContent = item.text;
+    });
+
+    $(`select-font-${item.id}`).addEventListener('change', (e) => {
+      item.el.classList.remove('font-gothic', 'font-gungseo', 'font-round');
+      item.printEl.classList.remove('font-gothic', 'font-gungseo', 'font-round');
+      item.font = e.target.value;
+      item.el.classList.add(item.font);
+      item.printEl.classList.add(item.font);
+    });
+  }
+
+  $(`range-size-${item.id}`).addEventListener('input', (e) => {
+    item.size = Number(e.target.value);
+    $(`label-size-${item.id}`).textContent = item.size + 'px';
+    syncPositions();
+  });
+}
+
+window.deleteItem = function(id){
+  const index = items.findIndex(i => i.id === id);
+  if(index > -1){
+    const item = items[index];
+    if(item.el) item.el.remove();
+    if(item.printEl) item.printEl.remove();
+    const ctrl = $(`control-item-${id}`);
+    if(ctrl) ctrl.remove();
+    items.splice(index, 1);
+  }
+};
+
+$('deleteLogoBtn').addEventListener('click', () => {
+  editor.hidden = true;
+  print.hidden = true;
+  $('logoControlBlock').style.display = 'none';
+  $('logoFile').value = '';
+  processedCanvas = null;
+  $('logoStatus').textContent = '로고가 삭제되었습니다.';
+});
+
+function makeDraggable(element, itemObj){
+  let dragging = false;
+  let lastX = 0, lastY = 0;
+
+  element.addEventListener('pointerdown', e => {
+    dragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    element.classList.add('dragging');
+    element.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+
+  element.addEventListener('pointermove', e => {
+    if(!dragging) return;
+    const r = workspace.getBoundingClientRect();
+    
+    if(itemObj){
+      itemObj.x = Math.max(0, Math.min(100, itemObj.x + (e.clientX - lastX) / r.width * 100));
+      itemObj.y = Math.max(0, Math.min(100, itemObj.y + (e.clientY - lastY) / r.height * 100));
+    } else {
+      logoX = Math.max(0, Math.min(100, logoX + (e.clientX - lastX) / r.width * 100));
+      logoY = Math.max(0, Math.min(100, logoY + (e.clientY - lastY) / r.height * 100));
+    }
+    
+    lastX = e.clientX;
+    lastY = e.clientY;
+    syncPositions();
+  });
+
+  const stopDrag = () => { dragging = false; element.classList.remove('dragging'); };
+  element.addEventListener('pointerup', stopDrag);
+  element.addEventListener('pointercancel', stopDrag);
+}
+
+function renderProcessed(){
+  if(!sourceImage) return;
+  const w=sourceImage.naturalWidth, h=sourceImage.naturalHeight;
+  const c=document.createElement('canvas'); c.width=w; c.height=h;
+  const ctx=c.getContext('2d', {willReadFrequently:true}); ctx.drawImage(sourceImage,0,0);
+  const im=ctx.getImageData(0,0,w,h), d=im.data;
+
+  for(let i=0;i<d.length;i+=4){
+    const r=d[i], g=d[i+1], b=d[i+2], a=d[i+3];
+    const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+
+    if(brightness > 200 || a < 40){
+      d[i+3] = 0;
+    } else {
+      d[i] = 0;
+      d[i+1] = 0;
+      d[i+2] = 0;
+      d[i+3] = 255;
+    }
+  }
+  ctx.putImageData(im,0,0);
+  processedCanvas=c;
+  c.toBlob(blob=>{
+    if(!blob) return;
+    if(processedUrl) URL.revokeObjectURL(processedUrl);
+    processedUrl=URL.createObjectURL(blob);
+    editor.onload=()=>{
+      editor.removeAttribute('hidden');
+      editor.hidden=false;
+      $('logoControlBlock').style.display = 'block';
+      updatePrintImage();
+      syncPositions();
+    };
+    editor.src=processedUrl;
+    $('logoStatus').textContent='로고가 깔끔한 선명의 절대 검정(#000000)으로 처리되었습니다.';
+  },'image/png');
+}
+
+function updatePrintImage(){
+  if(!processedCanvas) return;
+  const c=document.createElement('canvas');
+  c.width=processedCanvas.width; c.height=processedCanvas.height;
+  const ctx=c.getContext('2d');
+  ctx.drawImage(processedCanvas,0,0);
+  const im=ctx.getImageData(0,0,c.width,c.height), d=im.data;
+  const rr=parseInt(inkColor.slice(1,3),16), gg=parseInt(inkColor.slice(3,5),16), bb=parseInt(inkColor.slice(5,7),16);
+  for(let i=0;i<d.length;i+=4){
+    if(d[i+3]>0){
+      d[i]=rr; d[i+1]=gg; d[i+2]=bb;
+    }
+  }
+  ctx.putImageData(im,0,0);
+  c.toBlob(blob=>{
+    if(!blob) return;
+    const u=URL.createObjectURL(blob);
+    const old=print.dataset.objectUrl;
+    print.onload=()=>{
+      print.removeAttribute('hidden');
+      print.hidden=false;
+      if(old) URL.revokeObjectURL(old);
+      print.dataset.objectUrl=u;
+      syncPositions();
+    };
+    print.src=u;
+  },'image/png');
+}
+
+makeDraggable(editor, null);
+
+$('logoFile').addEventListener('change', e=>{
+  const f=e.target.files[0]; if(!f) return;
+  if(!/^image\/(png|jpeg|webp)$/.test(f.type)){ alert('PNG, JPG 또는 WEBP 이미지를 선택해 주세요.'); return; }
+  if(f.size>10*1024*1024){ alert('10MB 이하의 파일만 사용 가능합니다.'); return; }
+  if(objectUrl) URL.revokeObjectURL(objectUrl);
+  objectUrl=URL.createObjectURL(f);
+  sourceImage=new Image();
+  sourceImage.onload=renderProcessed;
+  sourceImage.src=objectUrl;
+});
+
+$('processAgain').addEventListener('click', renderProcessed);
+$('logoSize').addEventListener('input', syncPositions);
+$('resetPositions').addEventListener('click', ()=>{
+  logoX=50; logoY=50;
+  items.forEach(i => { i.x = 50; i.y = 50; });
+  syncPositions();
+});
+
+function setBalloonColor(v){ balloon.style.setProperty('--balloon', v); balloon.style.backgroundColor=v; }
+$('balloonPreset').addEventListener('change', e=>setBalloonColor(e.target.value));
+
+function setInkColor(v){
+  inkColor=v;
+  updatePrintImage();
+  syncPositions();
+}
+$('inkPreset').addEventListener('change', e=>setInkColor(e.target.value));
+
+/* 1. 편집 영역 원 안의 내용만 정사각형 PNG 저장 (#000000 절대검정) */
+$('downloadLogoPNG').addEventListener('click', () => {
+  const size = 800; // 1:1 정사각형 캔버스 (800x800)
+  const c = document.createElement('canvas');
+  c.width = size;
+  c.height = size;
+  const ctx = c.getContext('2d');
+
+  // 로고 이미지 렌더링
+  if (processedCanvas && !editor.hidden) {
+    const logoScale = Number($('logoSize').value) / 100;
+    const logoW = size * logoScale;
+    const logoH = logoW * (processedCanvas.height / processedCanvas.width);
+    const logoCx = (logoX / 100) * size;
+    const logoCy = (logoY / 100) * size;
+    ctx.drawImage(processedCanvas, logoCx - logoW / 2, logoCy - logoH / 2, logoW, logoH);
+  }
+
+  // 텍스트 및 아이콘 렌더링 (절대검정 #000000)
+  items.forEach(item => {
+    ctx.save();
+    const itemCx = (item.x / 100) * size;
+    const itemCy = (item.y / 100) * size;
+    const fontSize = item.size * (size / 260);
+
+    let fontName = 'sans-serif';
+    if (item.font === 'font-gungseo') fontName = 'Gungsuh, Batang, serif';
+    if (item.font === 'font-round') fontName = 'Gothic A1, cursive, sans-serif';
+    if (item.font === 'font-gothic') fontName = 'Nanum Gothic, Malgun Gothic, sans-serif';
+
+    ctx.font = `bold ${fontSize}px ${fontName}`;
+    ctx.fillStyle = '#000000';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(item.text, itemCx, itemCy);
+    ctx.restore();
+  });
+
+  const customerName = $('customerName').value.trim();
+  const fileName = customerName ? `${customerName}_만봉프린트-로고도안(#000000).png` : `만봉프린트-로고도안(#000000).png`;
+
+  const a = document.createElement('a');
+  a.download = fileName;
+  a.href = c.toDataURL('image/png');
+  a.click();
+});
+
+/* 2. 화면 미리보기와 100% 동일한 정사각형 JPG 풍선 시안 저장 */
+$('downloadPreviewJPG').addEventListener('click', () => {
+  const canvasSize = 1000; // 1:1 정사각형 고화질 캔버스 (1000x1000)
+  const c = document.createElement('canvas');
+  c.width = canvasSize;
+  c.height = canvasSize;
+  const ctx = c.getContext('2d');
+
+  // 전체 배경색 칠하기 (#f0f3f7)
+  ctx.fillStyle = '#f0f3f7';
+  ctx.fillRect(0, 0, canvasSize, canvasSize);
+
+  // 화면 미리보기 풍선의 1:1 정사각형 배치 기준 계산 (aspect-ratio 0.82 정확히 준수)
+  const bw = 550;               // 풍선 너비
+  const bh = bw / 0.82;         // 풍선 높이 (화면 css aspect-ratio: .82와 정확히 일치)
+  const bx = (canvasSize - bw) / 2;
+  const by = (canvasSize - bh) / 2 - 20; // 중앙 배치
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(bx + bw / 2, by + bh * 0.46, bw * 0.49, bh * 0.46, 0, 0, Math.PI * 2);
+  ctx.clip();
+
+  // 풍선 바탕색
+  ctx.fillStyle = $('balloonPreset').value;
+  ctx.fillRect(bx, by, bw, bh);
+
+  // 입체 광택 쉐이딩 효과 (화면 CSS 구현 그대로 캔버스에 재현)
+  const sh = ctx.createRadialGradient(bx + bw * 0.29, by + bh * 0.18, 5, bx + bw * 0.29, by + bh * 0.18, bw * 0.68);
+  sh.addColorStop(0, 'rgba(255,255,255,0.72)');
+  sh.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = sh;
+  ctx.fillRect(bx, by, bw, bh);
+
+  // 인쇄 영역 산출 (원형 지름 및 중앙 위치 동기화)
+  const workspaceWidth = workspace.getBoundingClientRect().width || 260;
+  const balloonWidth = balloon.getBoundingClientRect().width || 250;
+  const scaleFactor = bw / balloonWidth;
+  const printDiameter = workspaceWidth * 0.52 * scaleFactor;
+  const printCenterX = bx + bw / 2;
+  const printCenterY = by + bh * 0.47;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(printCenterX, printCenterY, printDiameter / 2, 0, Math.PI * 2);
+  ctx.clip();
+
+  // 미리보기 로고 렌더링
+  if (processedCanvas && !editor.hidden) {
+    const temp = document.createElement('canvas');
+    temp.width = processedCanvas.width;
+    temp.height = processedCanvas.height;
+    const t = temp.getContext('2d');
+    t.drawImage(processedCanvas, 0, 0);
+    t.globalCompositeOperation = 'source-in';
+    t.fillStyle = $('inkPreset').value;
+    t.fillRect(0, 0, temp.width, temp.height);
+
+    const logoWidth = workspaceWidth * 0.52 * (Number($('logoSize').value) / 100) * scaleFactor;
+    const logoHeight = logoWidth * (temp.height / temp.width);
+    const logoCx = printCenterX + (logoX / 100 - 0.5) * printDiameter;
+    const logoCy = printCenterY + (logoY / 100 - 0.5) * printDiameter;
+    ctx.drawImage(temp, logoCx - logoWidth / 2, logoCy - logoHeight / 2, logoWidth, logoHeight);
+  }
+
+  // 미리보기 텍스트/아이콘 렌더링
+  items.forEach(item => {
+    ctx.save();
+    const itemCx = printCenterX + (item.x / 100 - 0.5) * printDiameter;
+    const itemCy = printCenterY + (item.y / 100 - 0.5) * printDiameter;
+    const fontSize = item.size * 0.5 * scaleFactor;
+
+    let fontName = 'sans-serif';
+    if (item.font === 'font-gungseo') fontName = 'Gungsuh, Batang, serif';
+    if (item.font === 'font-round') fontName = 'Gothic A1, cursive, sans-serif';
+    if (item.font === 'font-gothic') fontName = 'Nanum Gothic, Malgun Gothic, sans-serif';
+
+    ctx.font = `bold ${fontSize}px ${fontName}`;
+    ctx.fillStyle = inkColor;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(item.text, itemCx, itemCy);
+    ctx.restore();
+  });
+
+  ctx.restore();
+  ctx.restore();
+
+  // 하단 브랜드 및 인쇄 방식 문구 표기
+  ctx.fillStyle = '#667085';
+  ctx.font = 'bold 22px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(`만봉프린트 시안 미리보기 (${selectedPrintType})`, canvasSize / 2, canvasSize - 60);
+  ctx.font = '16px sans-serif';
+  ctx.fillText('실제 인쇄 결과와 다를 수 있습니다.', canvasSize / 2, canvasSize - 30);
+
+  // 동적 파일명 설정: [고객명]_만봉프린트-풍선시안([인쇄방식]).jpg
+  const customerName = $('customerName').value.trim();
+  const fileName = customerName 
+    ? `${customerName}_만봉프린트-풍선시안(${selectedPrintType}).jpg` 
+    : `만봉프린트-풍선시안(${selectedPrintType}).jpg`;
+
+  const a = document.createElement('a');
+  a.download = fileName;
+  a.href = c.toDataURL('image/jpeg', 0.95);
+  a.click();
+});
+
+$('submitRequest').addEventListener('click', ()=>alert('접수 기능 준비 중입니다.'));
+window.addEventListener('resize', syncPositions);
+
+updateInkOptions();
+setBalloonColor($('balloonPreset').value);
+syncPositions();
+</script>
+</body>
+</html>
