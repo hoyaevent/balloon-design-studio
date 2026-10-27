@@ -36,9 +36,9 @@ button:focus,input:focus,select:focus{outline:2px solid #8ab4ff;outline-offset:1
 .print-type-btn{background:#edf0f4;color:#333;padding:12px 8px;border-radius:10px;font-size:14px;border:1px solid var(--line);cursor:pointer;transition:all 0.2s;}
 .print-type-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:bold;}
 
-.editor-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.editor-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:14px}
 .stage{background:#f0f3f7;border-radius:12px;padding:12px;text-align:center;min-width:0}
-.stage-title{font-size:13px;font-weight:700;margin:0 0 10px}
+.stage-title{font-size:13px;font-weight:700;margin:0 0 10px;color:#1e293b;}
 .circle-workspace{width:min(100%,260px);aspect-ratio:1;border:2px solid #343b48;border-radius:50%;background:#fff;position:relative;margin:auto;overflow:hidden;touch-action:none}
 
 .balloon-wrap{width:min(100%,260px);aspect-ratio:.82;margin:auto;position:relative}
@@ -49,10 +49,10 @@ button:focus,input:focus,select:focus{outline:2px solid #8ab4ff;outline-offset:1
 /* 편집 가능한 객체들 */
 .draggable-item{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);touch-action:none;user-select:none;cursor:grab;display:inline-block;white-space:nowrap;line-height:1;color:#000000 !important;}
 .draggable-item.dragging{cursor:grabbing}
-#editorLogo{object-fit:contain;max-width:none}
-#editorLogo[hidden]{display:none !important;}
-#balloonPrint{position:absolute;object-fit:contain;pointer-events:none;transform:translate(-50%,-50%);}
-#balloonPrint[hidden]{display:none !important;}
+#editorLogo, #backEditorLogo{object-fit:contain;max-width:none}
+#editorLogo[hidden], #backEditorLogo[hidden]{display:none !important;}
+#balloonPrint, #backBalloonPrint{position:absolute;object-fit:contain;pointer-events:none;transform:translate(-50%,-50%);}
+#balloonPrint[hidden], #backBalloonPrint[hidden]{display:none !important;}
 
 .text-item{font-weight:bold;pointer-events:auto}
 .icon-item{line-height:1;display:flex;align-items:center;justify-content:center;pointer-events:auto}
@@ -109,20 +109,43 @@ footer{max-width:1180px;margin:auto;padding:0 16px 28px;color:var(--muted);font-
     <button id="addTextBtn" type="button" class="secondary" style="width:100%">+ 텍스트 추가 (최대 3개)</button>
   </div>
 
-  <div class="editor-shell" style="margin-top:14px">
+  <!-- [앞면] 편집 영역 & 미리보기 -->
+  <div class="editor-shell">
     <div class="stage">
-      <p class="stage-title">로고 편집 영역</p>
+      <p class="stage-title">🖼️ 로고 편집 영역 (앞면)</p>
       <div class="circle-workspace" id="circleWorkspace">
-        <img id="editorLogo" class="draggable-item" alt="편집 중인 로고" hidden draggable="false">
+        <img id="editorLogo" class="draggable-item" alt="편집 중인 로고 (앞면)" hidden draggable="false">
       </div>
       <p class="balloon-note">원 안에서 요소들을 끌어 이동</p>
     </div>
     <div class="stage">
-      <p class="stage-title">풍선 시안 미리보기</p>
+      <p class="stage-title">🎈 풍선 시안 미리보기 (앞면)</p>
       <div class="balloon-wrap">
         <div class="balloon" id="balloon">
           <div class="print-area" id="printArea">
-            <img id="balloonPrint" alt="풍선 인쇄 미리보기" hidden>
+            <img id="balloonPrint" alt="풍선 인쇄 미리보기 (앞면)" hidden>
+          </div>
+        </div>
+      </div>
+      <p class="balloon-note">원형 편집 영역 바깥은 인쇄 시안에 표시되지 않습니다.</p>
+    </div>
+  </div>
+
+  <!-- [뒷면] 편집 영역 & 미리보기 (양면 선택 시에만 표시) -->
+  <div class="editor-shell" id="backEditorSection" style="display:none; border-top:2px dashed var(--line); padding-top:14px; margin-top:20px;">
+    <div class="stage">
+      <p class="stage-title">🖼️ 로고 편집 영역 (뒷면)</p>
+      <div class="circle-workspace" id="backCircleWorkspace">
+        <img id="backEditorLogo" class="draggable-item" alt="편집 중인 로고 (뒷면)" hidden draggable="false">
+      </div>
+      <p class="balloon-note">뒷면 원 안에서 요소들을 끌어 이동</p>
+    </div>
+    <div class="stage">
+      <p class="stage-title">🎈 풍선 시안 미리보기 (뒷면)</p>
+      <div class="balloon-wrap">
+        <div class="balloon" id="backBalloon">
+          <div class="print-area" id="backPrintArea">
+            <img id="backBalloonPrint" alt="풍선 인쇄 미리보기 (뒷면)" hidden>
           </div>
         </div>
       </div>
@@ -145,7 +168,7 @@ footer{max-width:1180px;margin:auto;padding:0 16px 28px;color:var(--muted);font-
     <!-- 로고 조절 바 -->
     <div id="logoControlBlock" class="control-item" style="display:none;">
       <div class="control-header">
-        <span>🖼️ 업로드 로고</span>
+        <span>🖼️ 업로드 로고 크기</span>
         <button type="button" class="danger" id="deleteLogoBtn">삭제</button>
       </div>
       <div class="range-row">
@@ -174,14 +197,14 @@ footer{max-width:1180px;margin:auto;padding:0 16px 28px;color:var(--muted);font-
     <button type="button" class="print-type-btn" data-type="2도 양면">2도 양면</button>
   </div>
 
-  <!-- 제작 수량 선택 -->
+  <!-- 제작 수량 선택 (기본값 100개) -->
   <label for="quantity">제작 수량 선택 *</label>
   <select id="quantity">
-    <option value="100">100개</option>
+    <option value="100" selected>100개</option>
     <option value="200">200개</option>
     <option value="300">300개</option>
     <option value="500">500개</option>
-    <option value="1000" selected>1,000개</option>
+    <option value="1000">1,000개</option>
     <option value="etc">기타 수량 상담</option>
   </select>
 
@@ -270,16 +293,25 @@ footer{max-width:1180px;margin:auto;padding:0 16px 28px;color:var(--muted);font-
 
 <script>
 const $=id=>document.getElementById(id);
+
+// 앞면 요소
 const editor=$('editorLogo'), print=$('balloonPrint'), workspace=$('circleWorkspace');
 const balloon=$('balloon'), printArea=$('printArea');
 
+// 뒷면 요소
+const backEditor=$('backEditorLogo'), backPrint=$('backBalloonPrint'), backWorkspace=$('backCircleWorkspace');
+const backBalloon=$('backBalloon'), backPrintArea=$('backPrintArea');
+const backEditorSection=$('backEditorSection');
+
 let sourceImage=null, processedCanvas=null, processedUrl=null;
-let logoX=50, logoY=50;
+let logoX=50, logoY=50;          // 앞면 로고 좌표
+let backLogoX=50, backLogoY=50;  // 뒷면 로고 좌표
 let objectUrl=null;
 let inkColor='#000000';
 let selectedPrintType = '1도 단면';
 
-let items = [];
+let items = [];     // 앞면 추가 아이템 (텍스트/아이콘)
+let backItems = []; // 뒷면 추가 아이템 (텍스트/아이콘)
 let nextId = 1;
 
 const allInkOptions = [
@@ -330,11 +362,20 @@ function updateInkOptions() {
   setInkColor(select.value);
 }
 
+// 인쇄 방식 카테고리 탭 클릭 이벤트 (단면 / 양면 분기)
 document.querySelectorAll('.print-type-btn').forEach(btn => {
   btn.addEventListener('click', (e) => {
     document.querySelectorAll('.print-type-btn').forEach(b => b.classList.remove('active'));
     e.target.classList.add('active');
     selectedPrintType = e.target.getAttribute('data-type');
+
+    // 양면(1도 양면, 2도 양면)인 경우 뒷면 편집 영역 표시
+    if(selectedPrintType.includes('양면')){
+      backEditorSection.style.display = 'grid';
+    } else {
+      backEditorSection.style.display = 'none';
+    }
+    syncPositions();
   });
 });
 
@@ -343,6 +384,7 @@ $('quantity').addEventListener('change', updateInkOptions);
 function syncPositions(){
   const logoSize=Number($('logoSize').value);
   
+  // 1. 앞면 로고 위치 및 크기
   editor.style.width=logoSize+'%';
   editor.style.height='auto';
   editor.style.left=logoX+'%';
@@ -361,8 +403,45 @@ function syncPositions(){
   print.style.height='auto';
   $('sizeLabel').textContent=logoSize+'%';
 
+  // 2. 뒷면 로고 위치 및 크기 (양면일 때)
+  if(selectedPrintType.includes('양면') && !backEditor.hidden){
+    backEditor.style.width=logoSize+'%';
+    backEditor.style.height='auto';
+    backEditor.style.left=backLogoX+'%';
+    backEditor.style.top=backLogoY+'%';
+
+    const backWsRect = backWorkspace.getBoundingClientRect();
+    const backBalRect = backBalloon.getBoundingClientRect();
+    if(backWsRect.width && backBalRect.width){
+      const printDiam2 = backWsRect.width * 0.52;
+      backPrintArea.style.width = (printDiam2 / backBalRect.width * 100) + '%';
+    }
+    backPrint.style.left = backLogoX + '%';
+    backPrint.style.top = backLogoY + '%';
+    backPrint.style.width = logoSize + '%';
+    backPrint.style.height = 'auto';
+  }
+
   const scale = workspaceRect.width / 260 || 1;
+  
+  // 앞면 아이템/텍스트 싱크
   items.forEach(item => {
+    if(item.el){
+      item.el.style.left = item.x + '%';
+      item.el.style.top = item.y + '%';
+      item.el.style.fontSize = (item.size * scale) + 'px';
+      item.el.style.color = '#000000';
+    }
+    if(item.printEl){
+      item.printEl.style.left = item.x + '%';
+      item.printEl.style.top = item.y + '%';
+      item.printEl.style.fontSize = (item.size * 0.5 * scale) + 'px';
+      item.printEl.style.color = inkColor;
+    }
+  });
+
+  // 뒷면 아이템/텍스트 싱크
+  backItems.forEach(item => {
     if(item.el){
       item.el.style.left = item.x + '%';
       item.el.style.top = item.y + '%';
@@ -379,22 +458,23 @@ function syncPositions(){
 }
 
 $('addTextBtn').addEventListener('click', () => {
-  const textCount = items.filter(i => i.type === 'text').length;
-  if(textCount >= 3){
-    alert('텍스트는 최대 3개까지 추가할 수 있습니다.');
+  const totalCount = items.length + backItems.length;
+  if(totalCount >= 6){
+    alert('텍스트와 아이콘은 전체 최대 6개까지 추가할 수 있습니다.');
     return;
   }
-  createItem('text', '문구추가', 'font-gothic', 22);
+  // 기본적으로 앞면에 추가 (또는 사용자가 원하면 선택 가능)
+  createItem('text', '문구추가', 'font-gothic', 22, 'front');
 });
 
 document.querySelectorAll('.icon-btn').forEach(btn => {
   btn.addEventListener('click', (e) => {
     const iconChar = e.currentTarget.getAttribute('data-icon');
-    createItem('icon', iconChar, 'font-gothic', 28);
+    createItem('icon', iconChar, 'font-gothic', 28, 'front');
   });
 });
 
-function createItem(type, content, fontClass, defaultSize){
+function createItem(type, content, fontClass, defaultSize, side = 'front'){
   const id = nextId++;
   const item = {
     id,
@@ -403,25 +483,30 @@ function createItem(type, content, fontClass, defaultSize){
     font: fontClass,
     size: defaultSize,
     x: 50,
-    y: 50
+    y: 50,
+    side
   };
+
+  const targetWs = (side === 'back') ? backWorkspace : workspace;
+  const targetPrintArea = (side === 'back') ? backPrintArea : printArea;
+  const targetList = (side === 'back') ? backItems : items;
 
   const el = document.createElement('div');
   el.className = `draggable-item ${type === 'text' ? 'text-item' : 'icon-item'} ${fontClass}`;
   el.textContent = content;
   el.style.color = '#000000';
-  workspace.appendChild(el);
+  targetWs.appendChild(el);
   item.el = el;
 
   const printEl = document.createElement('div');
   printEl.className = `print-item ${fontClass}`;
   printEl.textContent = content;
   printEl.style.color = inkColor;
-  printArea.appendChild(printEl);
+  targetPrintArea.appendChild(printEl);
   item.printEl = printEl;
 
   makeDraggable(el, item);
-  items.push(item);
+  targetList.push(item);
 
   renderControlUI(item);
   syncPositions();
@@ -434,7 +519,8 @@ function renderControlUI(item){
   div.id = `control-item-${item.id}`;
 
   const isText = item.type === 'text';
-  const title = isText ? `✍️ 텍스트 #${item.id}` : `✨ 아이콘 (${item.text})`;
+  const sideLabel = item.side === 'back' ? '[뒷면]' : '[앞면]';
+  const title = isText ? `✍️ ${sideLabel} 텍스트 #${item.id}` : `✨ ${sideLabel} 아이콘 (${item.text})`;
 
   div.innerHTML = `
     <div class="control-header">
@@ -484,20 +570,27 @@ function renderControlUI(item){
 }
 
 window.deleteItem = function(id){
-  const index = items.findIndex(i => i.id === id);
+  let index = items.findIndex(i => i.id === id);
+  let targetList = items;
+  if(index === -1){
+    index = backItems.findIndex(i => i.id === id);
+    targetList = backItems;
+  }
   if(index > -1){
-    const item = items[index];
+    const item = targetList[index];
     if(item.el) item.el.remove();
     if(item.printEl) item.printEl.remove();
     const ctrl = $(`control-item-${id}`);
     if(ctrl) ctrl.remove();
-    items.splice(index, 1);
+    targetList.splice(index, 1);
   }
 };
 
 $('deleteLogoBtn').addEventListener('click', () => {
   editor.hidden = true;
   print.hidden = true;
+  backEditor.hidden = true;
+  backPrint.hidden = true;
   $('logoControlBlock').style.display = 'none';
   $('logoFile').value = '';
   processedCanvas = null;
@@ -519,14 +612,21 @@ function makeDraggable(element, itemObj){
 
   element.addEventListener('pointermove', e => {
     if(!dragging) return;
-    const r = workspace.getBoundingClientRect();
+    const isBack = itemObj && itemObj.side === 'back';
+    const r = (isBack ? backWorkspace : workspace).getBoundingClientRect();
     
     if(itemObj){
       itemObj.x = Math.max(0, Math.min(100, itemObj.x + (e.clientX - lastX) / r.width * 100));
       itemObj.y = Math.max(0, Math.min(100, itemObj.y + (e.clientY - lastY) / r.height * 100));
     } else {
-      logoX = Math.max(0, Math.min(100, logoX + (e.clientX - lastX) / r.width * 100));
-      logoY = Math.max(0, Math.min(100, logoY + (e.clientY - lastY) / r.height * 100));
+      // 로고 드래그 (앞면 vs 뒷면 구분)
+      if(element === backEditor){
+        backLogoX = Math.max(0, Math.min(100, backLogoX + (e.clientX - lastX) / r.width * 100));
+        backLogoY = Math.max(0, Math.min(100, backLogoY + (e.clientY - lastY) / r.height * 100));
+      } else {
+        logoX = Math.max(0, Math.min(100, logoX + (e.clientX - lastX) / r.width * 100));
+        logoY = Math.max(0, Math.min(100, logoY + (e.clientY - lastY) / r.height * 100));
+      }
     }
     
     lastX = e.clientX;
@@ -565,14 +665,19 @@ function renderProcessed(){
     if(!blob) return;
     if(processedUrl) URL.revokeObjectURL(processedUrl);
     processedUrl=URL.createObjectURL(blob);
+    
     editor.onload=()=>{
       editor.removeAttribute('hidden');
       editor.hidden=false;
+      backEditor.removeAttribute('hidden');
+      backEditor.hidden=false;
       $('logoControlBlock').style.display = 'block';
       updatePrintImage();
       syncPositions();
     };
     editor.src=processedUrl;
+    backEditor.src=processedUrl;
+
     $('logoStatus').textContent='로고가 고해상도 절대 검정(#000000)으로 처리되었습니다.';
   },'image/png');
 }
@@ -595,6 +700,8 @@ function updatePrintImage(){
     if(!blob) return;
     const u=URL.createObjectURL(blob);
     const old=print.dataset.objectUrl;
+    const oldBack=backPrint.dataset.objectUrl;
+
     print.onload=()=>{
       print.removeAttribute('hidden');
       print.hidden=false;
@@ -603,10 +710,20 @@ function updatePrintImage(){
       syncPositions();
     };
     print.src=u;
+
+    backPrint.onload=()=>{
+      backPrint.removeAttribute('hidden');
+      backPrint.hidden=false;
+      if(oldBack) URL.revokeObjectURL(oldBack);
+      backPrint.dataset.objectUrl=u;
+      syncPositions();
+    };
+    backPrint.src=u;
   },'image/png');
 }
 
 makeDraggable(editor, null);
+makeDraggable(backEditor, null);
 
 $('logoFile').addEventListener('change', e=>{
   const f=e.target.files[0]; if(!f) return;
@@ -623,11 +740,18 @@ $('processAgain').addEventListener('click', renderProcessed);
 $('logoSize').addEventListener('input', syncPositions);
 $('resetPositions').addEventListener('click', ()=>{
   logoX=50; logoY=50;
+  backLogoX=50; backLogoY=50;
   items.forEach(i => { i.x = 50; i.y = 50; });
+  backItems.forEach(i => { i.x = 50; i.y = 50; });
   syncPositions();
 });
 
-function setBalloonColor(v){ balloon.style.setProperty('--balloon', v); balloon.style.backgroundColor=v; }
+function setBalloonColor(v){
+  balloon.style.setProperty('--balloon', v);
+  balloon.style.backgroundColor=v;
+  backBalloon.style.setProperty('--balloon', v);
+  backBalloon.style.backgroundColor=v;
+}
 $('balloonPreset').addEventListener('change', e=>setBalloonColor(e.target.value));
 
 function setInkColor(v){
@@ -661,90 +785,102 @@ $('downloadCombinedImage').addEventListener('click', () => {
   ctx.lineTo(1000, 960);
   ctx.stroke();
 
-  // -------------------------------------------------------------
-  // [LEFT PAGE - 1000x1000 영역] : 로고 도안 편집 영역 (#000000)
-  // -------------------------------------------------------------
-  const leftCX = 500;
-  const leftCY = 500;
+  const isDoubleSide = selectedPrintType.includes('양면');
 
-  // 좌측 원형 배경 가이드라인 (편집 영역)
-  const circleRadius = 320;
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(leftCX, leftCY, circleRadius, 0, Math.PI * 2);
-  ctx.fillStyle = '#ffffff';
-  ctx.fill();
-  ctx.strokeStyle = '#343b48';
-  ctx.lineWidth = 4;
-  ctx.stroke();
-  ctx.clip(); // 원 안쪽에만 요소 렌더링
+  // -------------------------------------------------------------
+  // [LEFT PAGE - 1000x1000 영역] : 단면이면 앞면 도안, 양면이면 앞면 풍선시안
+  // -------------------------------------------------------------
+  if(!isDoubleSide){
+    // 단면: 왼쪽은 로고 도안
+    const leftCX = 500, leftCY = 500, circleRadius = 320;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(leftCX, leftCY, circleRadius, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = '#343b48';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    ctx.clip();
 
-  // 좌측 원 안 로고 이미지
-  if (processedCanvas && !editor.hidden) {
-    const logoScale = Number($('logoSize').value) / 100;
-    const logoW = (circleRadius * 2) * logoScale;
-    const logoH = logoW * (processedCanvas.height / processedCanvas.width);
-    const logoCx = leftCX + (logoX / 100 - 0.5) * (circleRadius * 2);
-    const logoCy = leftCY + (logoY / 100 - 0.5) * (circleRadius * 2);
-    ctx.drawImage(processedCanvas, logoCx - logoW / 2, logoCy - logoH / 2, logoW, logoH);
+    if (processedCanvas && !editor.hidden) {
+      const logoScale = Number($('logoSize').value) / 100;
+      const logoW = (circleRadius * 2) * logoScale;
+      const logoH = logoW * (processedCanvas.height / processedCanvas.width);
+      const logoCx = leftCX + (logoX / 100 - 0.5) * (circleRadius * 2);
+      const logoCy = leftCY + (logoY / 100 - 0.5) * (circleRadius * 2);
+      ctx.drawImage(processedCanvas, logoCx - logoW / 2, logoCy - logoH / 2, logoW, logoH);
+    }
+
+    items.forEach(item => {
+      ctx.save();
+      const itemCx = leftCX + (item.x / 100 - 0.5) * (circleRadius * 2);
+      const itemCy = leftCY + (item.y / 100 - 0.5) * (circleRadius * 2);
+      const fontSize = item.size * ((circleRadius * 2) / 260);
+      let fontName = 'sans-serif';
+      if (item.font === 'font-gungseo') fontName = 'Gungsuh, Batang, serif';
+      if (item.font === 'font-round') fontName = 'Gothic A1, cursive, sans-serif';
+      if (item.font === 'font-gothic') fontName = 'Nanum Gothic, Malgun Gothic, sans-serif';
+      ctx.font = `bold ${fontSize}px ${fontName}`;
+      ctx.fillStyle = '#000000';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(item.text, itemCx, itemCy);
+      ctx.restore();
+    });
+    ctx.restore();
+
+    ctx.fillStyle = '#20242b';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('인쇄 로고 도안 (#000000)', leftCX, 100);
+  } else {
+    // 양면: 왼쪽은 앞면 풍선시안
+    renderBalloonOnCanvas(ctx, 500, 500, logoX, logoY, items, '풍선 미리보기 시안 (앞면)');
   }
 
-  // 좌측 원 안 텍스트/아이콘 (#000000 절대검정)
-  items.forEach(item => {
-    ctx.save();
-    const itemCx = leftCX + (item.x / 100 - 0.5) * (circleRadius * 2);
-    const itemCy = leftCY + (item.y / 100 - 0.5) * (circleRadius * 2);
-    const fontSize = item.size * ((circleRadius * 2) / 260);
-
-    let fontName = 'sans-serif';
-    if (item.font === 'font-gungseo') fontName = 'Gungsuh, Batang, serif';
-    if (item.font === 'font-round') fontName = 'Gothic A1, cursive, sans-serif';
-    if (item.font === 'font-gothic') fontName = 'Nanum Gothic, Malgun Gothic, sans-serif';
-
-    ctx.font = `bold ${fontSize}px ${fontName}`;
-    ctx.fillStyle = '#000000';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(item.text, itemCx, itemCy);
-    ctx.restore();
-  });
-
-  ctx.restore(); // 클리핑 해제
-
-  // 좌측 제목 텍스트
-  ctx.fillStyle = '#20242b';
-  ctx.font = 'bold 24px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('인쇄 로고 도안 (#000000)', leftCX, 100);
-
   // -------------------------------------------------------------
-  // [RIGHT PAGE - 1000x1000 영역] : 풍선 시안 미리보기 (실제 미리보기와 100% 동일)
+  // [RIGHT PAGE - 1000x1000 영역] : 풍선 시안 미리보기 (단면은 우측에 풍선, 양면은 우측에 뒷면 풍선)
   // -------------------------------------------------------------
-  const rightCX = 1500;
-  const rightCY = 500;
+  if(!isDoubleSide){
+    renderBalloonOnCanvas(ctx, 1500, 500, logoX, logoY, items, `풍선 미리보기 시안 (${selectedPrintType})`);
+  } else {
+    renderBalloonOnCanvas(ctx, 1500, 500, backLogoX, backLogoY, backItems, `풍선 미리보기 시안 (뒷면)`);
+  }
 
+  // 동적 파일명 지정
+  const customerName = $('customerName').value.trim();
+  const fileName = customerName 
+    ? `${customerName}_만봉프린트-통합시안(${selectedPrintType}).jpg` 
+    : `만봉프린트-통합시안(${selectedPrintType}).jpg`;
+
+  const a = document.createElement('a');
+  a.download = fileName;
+  a.href = c.toDataURL('image/jpeg', 0.95);
+  a.click();
+});
+
+// 캔버스에 풍선 시안 렌더링 헬퍼 함수
+function renderBalloonOnCanvas(ctx, centerX, centerY, lX, lY, targetItems, titleText){
   const bw = 550;
-  const bh = bw / 0.82; // 화면 CSS의 aspect-ratio: .82와 완전히 동일
-  const bx = rightCX - bw / 2;
-  const by = rightCY - bh / 2 - 20;
+  const bh = bw / 0.82;
+  const bx = centerX - bw / 2;
+  const by = centerY - bh / 2 - 20;
 
   ctx.save();
   ctx.beginPath();
   ctx.ellipse(bx + bw / 2, by + bh * 0.46, bw * 0.49, bh * 0.46, 0, 0, Math.PI * 2);
   ctx.clip();
 
-  // 풍선 바탕색
   ctx.fillStyle = $('balloonPreset').value;
   ctx.fillRect(bx, by, bw, bh);
 
-  // 풍선 입체 광택 쉐이딩 효과 (화면 미리보기 CSS와 동일)
   const sh = ctx.createRadialGradient(bx + bw * 0.29, by + bh * 0.18, 5, bx + bw * 0.29, by + bh * 0.18, bw * 0.68);
   sh.addColorStop(0, 'rgba(255,255,255,0.72)');
   sh.addColorStop(1, 'rgba(255,255,255,0)');
   ctx.fillStyle = sh;
   ctx.fillRect(bx, by, bw, bh);
 
-  // 풍선 인쇄 영역 계산
   const workspaceWidth = workspace.getBoundingClientRect().width || 260;
   const balloonWidth = balloon.getBoundingClientRect().width || 250;
   const scaleFactor = bw / balloonWidth;
@@ -757,7 +893,6 @@ $('downloadCombinedImage').addEventListener('click', () => {
   ctx.arc(printCenterX, printCenterY, printDiameter / 2, 0, Math.PI * 2);
   ctx.clip();
 
-  // 풍선 위 인쇄 로고
   if (processedCanvas && !editor.hidden) {
     const temp = document.createElement('canvas');
     temp.width = processedCanvas.width;
@@ -772,13 +907,12 @@ $('downloadCombinedImage').addEventListener('click', () => {
 
     const logoWidth = workspaceWidth * 0.52 * (Number($('logoSize').value) / 100) * scaleFactor;
     const logoHeight = logoWidth * (temp.height / temp.width);
-    const logoCx = printCenterX + (logoX / 100 - 0.5) * printDiameter;
-    const logoCy = printCenterY + (logoY / 100 - 0.5) * printDiameter;
+    const logoCx = printCenterX + (lX / 100 - 0.5) * printDiameter;
+    const logoCy = printCenterY + (lY / 100 - 0.5) * printDiameter;
     ctx.drawImage(temp, logoCx - logoWidth / 2, logoCy - logoHeight / 2, logoWidth, logoHeight);
   }
 
-  // 풍선 위 인쇄 텍스트/아이콘
-  items.forEach(item => {
+  targetItems.forEach(item => {
     ctx.save();
     const itemCx = printCenterX + (item.x / 100 - 0.5) * printDiameter;
     const itemCy = printCenterY + (item.y / 100 - 0.5) * printDiameter;
@@ -800,25 +934,13 @@ $('downloadCombinedImage').addEventListener('click', () => {
   ctx.restore();
   ctx.restore();
 
-  // 우측 하단 텍스트 표기
   ctx.fillStyle = '#667085';
   ctx.font = 'bold 24px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(`풍선 미리보기 시안 (${selectedPrintType})`, rightCX, canvasH - 60);
+  ctx.fillText(titleText, centerX, 940);
   ctx.font = '16px sans-serif';
-  ctx.fillText('실제 인쇄 결과와 다를 수 있습니다.', rightCX, canvasH - 30);
-
-  // 동적 파일명 지정
-  const customerName = $('customerName').value.trim();
-  const fileName = customerName 
-    ? `${customerName}_만봉프린트-통합시안(${selectedPrintType}).jpg` 
-    : `만봉프린트-통합시안(${selectedPrintType}).jpg`;
-
-  const a = document.createElement('a');
-  a.download = fileName;
-  a.href = c.toDataURL('image/jpeg', 0.95);
-  a.click();
-});
+  ctx.fillText('실제 인쇄 결과와 다를 수 있습니다.', centerX, 970);
+}
 
 $('submitRequest').addEventListener('click', ()=>alert('접수 기능 준비 중입니다.'));
 window.addEventListener('resize', syncPositions);
