@@ -12,15 +12,25 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:#20242b;font-family:Arial,"Malgun Gothic",sans-serif}
 header{background:#fff;border-bottom:1px solid var(--line);padding:24px 20px}
-.header-inner,main{max-width:1180px;margin:auto;transition:max-width 0.3s ease}
+.header-inner,main{max-width:1200px;margin:auto;transition:max-width 0.3s ease}
+
+/* 양면 작업 시 전체 메인 컨테이너 최대 폭을 유동적으로 넓힘 */
 body.double-sided-mode .header-inner,
-body.double-sided-mode main{max-width:1680px} /* 양면 작업 시 전체 폭 대폭 확장 */
+body.double-sided-mode main{max-width:1760px}
 
 h1{font-size:clamp(22px,3vw,30px);margin:0 0 10px}
 p{line-height:1.6}
 .muted,.hint{color:var(--muted);font-size:13px;margin-bottom:12px;}
 main{padding:28px 16px 56px}
-.layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,0.8fr);gap:24px;align-items:start}
+
+/* 메인 2분할 레이아웃 (유동적 비율) */
+.layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,0.8fr);gap:24px;align-items:start;transition:all 0.3s ease}
+
+/* 양면 모드일 때 1번 카드 비율을 대폭 확장하여 2번 카드와의 간섭 예방 */
+body.double-sided-mode .layout{
+  grid-template-columns: minmax(0, 2fr) minmax(320px, 0.8fr);
+}
+
 .card{background:var(--card);border:1px solid #e4e7ec;border-radius:18px;padding:24px;min-width:0;box-shadow:0 2px 8px rgba(0,0,0,0.02)}
 h2{font-size:20px;margin:0 0 18px;border-bottom:2px solid var(--line);padding-bottom:10px}
 h3{font-size:16px;margin:20px 0 12px}
@@ -33,17 +43,17 @@ button.danger{background:#fee2e2;color:var(--danger);padding:8px 12px;font-size:
 button.danger:hover{background:#fca5a5}
 button:focus,input:focus,select:focus{outline:2px solid #8ab4ff;outline-offset:1px}
 
-/* 편집 박스 레이아웃 컨테이너 */
+/* 편집 박스 레이아웃 컨테이너 (유동적 분할) */
 .editors-wrapper{display:grid;grid-template-columns:1fr;gap:20px;margin-top:16px}
 
-/* PC 화면에서 양면 선택 시 각 편집박스가 단면 원본 크기 그대로 나란히 2컬럼 배치 */
-@media (min-width: 1200px) {
+/* PC 및 대형 화면에서 양면 선택 시 앞/뒷면 편집 박스가 유동 비율로 나란히 나열됨 */
+@media (min-width: 1100px) {
   body.double-sided-mode .editors-wrapper {
-    grid-template-columns: minmax(520px, 1fr) minmax(520px, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 }
 
-.section-box{background:#f8fafc;border:2px solid #cbd5e1;border-radius:14px;padding:20px;margin-bottom:10px}
+.section-box{background:#f8fafc;border:2px solid #cbd5e1;border-radius:14px;padding:20px;margin-bottom:10px;min-width:0}
 .section-box.back-box{background:#f1f5f9;border-color:#94a3b8}
 .section-tag{display:inline-block;padding:6px 14px;background:#334155;color:#fff;font-size:13px;font-weight:bold;border-radius:6px;margin-bottom:16px}
 .section-tag.back-tag{background:#475569}
@@ -97,9 +107,22 @@ button:focus,input:focus,select:focus{outline:2px solid #8ab4ff;outline-offset:1
 .section-line{border:0;border-top:1px solid #e2e8f0;margin:24px 0}
 .notice{background:#fff8e6;border:1px solid #f4df9b;padding:14px;border-radius:10px;font-size:13px;line-height:1.6;margin-top:18px}
 .status{font-size:13px;margin-top:12px;white-space:pre-wrap}
-footer{max-width:1180px;margin:auto;padding:0 16px 36px;color:var(--muted);font-size:12px}
-@media(max-width:1024px){.layout{grid-template-columns:1fr}.card{padding:18px}.editor-shell{grid-template-columns:1fr 1fr;gap:8px}.stage{padding:8px}.circle-workspace,.balloon-wrap{width:100%}.print-type-tabs{grid-template-columns:repeat(2, 1fr);}}
-@media(max-width:480px){.editor-shell{grid-template-columns:1fr}.circle-workspace,.balloon-wrap{max-width:240px}}
+footer{max-width:1200px;margin:auto;padding:0 16px 36px;color:var(--muted);font-size:12px}
+
+/* 모바일 및 화면 폭이 줄어들 때 유동적 세로 배치 */
+@media(max-width:1099px){
+  .layout{grid-template-columns:1fr !important;}
+  .card{padding:18px}
+  .editor-shell{grid-template-columns:1fr 1fr;gap:8px}
+  .stage{padding:8px}
+  .circle-workspace,.balloon-wrap{width:100%}
+  .print-type-tabs{grid-template-columns:repeat(2, 1fr);}
+}
+
+@media(max-width:480px){
+  .editor-shell{grid-template-columns:1fr}
+  .circle-workspace,.balloon-wrap{max-width:240px}
+}
 </style>
 </head>
 <body>
@@ -407,7 +430,6 @@ document.querySelectorAll('.print-type-btn').forEach(btn => {
     const isDouble = selectedPrintType.includes('양면');
     backEditorSection.style.display = isDouble ? 'block' : 'none';
 
-    // 양면 모드 시 body 클래스 토글 (전체 너비 확장을 위함)
     if(isDouble) {
       document.body.classList.add('double-sided-mode');
     } else {
