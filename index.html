@@ -11,32 +11,38 @@
 :root{--ink:#171717;--muted:#667085;--line:#d9dee7;--bg:#f4f6f9;--card:#fff;--accent:#202938;--danger:#dc2626}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:#20242b;font-family:Arial,"Malgun Gothic",sans-serif}
-header{background:#fff;border-bottom:1px solid var(--line);padding:22px 18px}
+header{background:#fff;border-bottom:1px solid var(--line);padding:24px 20px}
 .header-inner,main{max-width:1180px;margin:auto}
-h1{font-size:clamp(22px,3vw,30px);margin:0 0 8px}
-p{line-height:1.55}
-.muted,.hint{color:var(--muted);font-size:13px}
-main{padding:22px 16px 48px}
-.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
-.card{background:var(--card);border:1px solid #e4e7ec;border-radius:16px;padding:20px;min-width:0}
-h2{font-size:19px;margin:0 0 14px}
-h3{font-size:15px;margin:20px 0 8px}
-label{display:block;font-size:14px;font-weight:700;margin:14px 0 7px}
+h1{font-size:clamp(22px,3vw,30px);margin:0 0 10px}
+p{line-height:1.6}
+.muted,.hint{color:var(--muted);font-size:13px;margin-bottom:12px;}
+main{padding:28px 16px 56px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+.card{background:var(--card);border:1px solid #e4e7ec;border-radius:18px;padding:24px;min-width:0;box-shadow:0 2px 8px rgba(0,0,0,0.02)}
+h2{font-size:20px;margin:0 0 18px;border-bottom:2px solid var(--line);padding-bottom:10px}
+h3{font-size:16px;margin:28px 0 12px}
+label{display:block;font-size:14px;font-weight:700;margin:20px 0 8px}
 input,select,textarea,button{font:inherit}
-input[type=text],input[type=tel],input[type=email],input[type=number],select,textarea,input[type=file]{width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;background:#fff}
+input[type=text],input[type=tel],input[type=email],input[type=number],select,textarea,input[type=file]{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff;margin-bottom:6px}
 button{border:0;border-radius:10px;padding:12px 16px;background:var(--accent);color:#fff;cursor:pointer;font-weight:700}
 button.secondary{background:#edf0f4;color:#222}
 button.danger{background:#fee2e2;color:var(--danger);padding:8px 12px;font-size:13px}
 button.danger:hover{background:#fca5a5}
 button:focus,input:focus,select:focus{outline:2px solid #8ab4ff;outline-offset:1px}
 
-.print-type-tabs{display:grid;grid-template-columns:repeat(4, 1fr);gap:8px;margin-bottom:16px;}
+/* 편집 구간 박스 디자인 추가 (앞면/뒷면 명확 구분) */
+.section-box{background:#f8fafc;border:2px solid #cbd5e1;border-radius:14px;padding:18px;margin-top:20px;margin-bottom:20px}
+.section-box.back-box{background:#f1f5f9;border-color:#94a3b8}
+.section-tag{display:inline-block;padding:5px 12px;background:#334155;color:#fff;font-size:13px;font-weight:bold;border-radius:6px;margin-bottom:14px}
+.section-tag.back-tag{background:#475569}
+
+.print-type-tabs{display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;margin-bottom:20px;}
 .print-type-btn{background:#edf0f4;color:#333;padding:12px 8px;border-radius:10px;font-size:14px;border:1px solid var(--line);cursor:pointer;transition:all 0.2s;}
 .print-type-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:bold;}
 
-.editor-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:14px}
-.stage{background:#f0f3f7;border-radius:12px;padding:12px;text-align:center;min-width:0}
-.stage-title{font-size:13px;font-weight:700;margin:0 0 10px;color:#1e293b;}
+.editor-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:14px}
+.stage{background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center;min-width:0}
+.stage-title{font-size:13px;font-weight:700;margin:0 0 12px;color:#1e293b;}
 .circle-workspace{width:min(100%,260px);aspect-ratio:1;border:2px solid #343b48;border-radius:50%;background:#fff;position:relative;margin:auto;overflow:hidden;touch-action:none}
 
 .balloon-wrap{width:min(100%,260px);aspect-ratio:.82;margin:auto;position:relative}
@@ -60,27 +66,27 @@ button:focus,input:focus,select:focus{outline:2px solid #8ab4ff;outline-offset:1
 
 .print-item{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;white-space:nowrap;line-height:1;display:inline-block}
 
-.icon-toolbar{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;background:#f8fafc;padding:8px;border-radius:10px;border:1px solid var(--line)}
-.icon-btn{padding:6px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:16px;color:#000000;display:flex;align-items:center;justify-content:center;transition:all 0.2s;font-weight:bold;}
+.icon-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px;background:#fff;padding:10px;border-radius:10px;border:1px solid var(--line)}
+.icon-btn{padding:8px 14px;background:#fff;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:16px;color:#000000;display:flex;align-items:center;justify-content:center;transition:all 0.2s;font-weight:bold;}
 .icon-btn:hover{background:#edf0f4;border-color:#b0b8c5}
 
-.control-item{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:10px}
+.control-item{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:14px}
 .control-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .control-header span{font-size:13px;font-weight:bold}
-.control-row{display:flex;gap:8px;align-items:center;margin-top:6px}
-.control-row input[type=text]{flex:1}
-.control-row select{width:110px}
+.control-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+.control-row input[type=text]{flex:1;margin-bottom:0}
+.control-row select{width:120px;margin-bottom:0}
 
-.balloon-note{font-size:12px;color:var(--muted);margin:8px 0 0}
-.range-row{display:flex;gap:10px;align-items:center}
-.range-row input{flex:1;min-width:0}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.balloon-note{font-size:12px;color:var(--muted);margin:10px 0 0}
+.range-row{display:flex;gap:12px;align-items:center}
+.range-row input{flex:1;min-width:0;margin-bottom:0}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
 .actions button{flex:1}
-.section-line{border:0;border-top:1px solid #edf0f4;margin:20px 0}
-.notice{background:#fff8e6;border:1px solid #f4df9b;padding:12px;border-radius:10px;font-size:13px;line-height:1.55;margin-top:14px}
-.status{font-size:13px;margin-top:10px;white-space:pre-wrap}
-footer{max-width:1180px;margin:auto;padding:0 16px 28px;color:var(--muted);font-size:12px}
-@media(max-width:760px){main{padding:14px 10px 32px}.layout{grid-template-columns:1fr}.card{padding:16px}.editor-shell{grid-template-columns:1fr 1fr;gap:8px}.stage{padding:8px}.circle-workspace{width:100%}.balloon-wrap{width:100%}.print-type-tabs{grid-template-columns:repeat(2, 1fr);}}
+.section-line{border:0;border-top:1px solid #e2e8f0;margin:30px 0}
+.notice{background:#fff8e6;border:1px solid #f4df9b;padding:14px;border-radius:10px;font-size:13px;line-height:1.6;margin-top:18px}
+.status{font-size:13px;margin-top:12px;white-space:pre-wrap}
+footer{max-width:1180px;margin:auto;padding:0 16px 36px;color:var(--muted);font-size:12px}
+@media(max-width:760px){main{padding:16px 10px 36px}.layout{grid-template-columns:1fr}.card{padding:18px}.editor-shell{grid-template-columns:1fr 1fr;gap:8px}.stage{padding:8px}.circle-workspace{width:100%}.balloon-wrap{width:100%}.print-type-tabs{grid-template-columns:repeat(2, 1fr);}}
 @media(max-width:380px){.editor-shell{grid-template-columns:1fr}.circle-workspace,.balloon-wrap{max-width:240px}}
 </style>
 </head>
@@ -94,45 +100,52 @@ footer{max-width:1180px;margin:auto;padding:0 16px 28px;color:var(--muted);font-
 <section class="card">
   <h2>1. 로고 및 문구 편집</h2>
   <p class="hint">로고 이미지를 올리거나 텍스트, 아이콘을 추가하여 시안을 꾸며보세요. 편집 원 안에서 마우스로 자유롭게 위치를 이동시킬 수 있습니다.</p>
-  
-  <label for="logoFile">앞면 로고 이미지 업로드 (JPG / PNG / WEBP)</label>
-  <input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp">
-  
-  <div style="margin-top:10px;">
-    <button id="addTextBtn" type="button" class="secondary" style="width:100%">+ 앞면 텍스트 추가 (최대 3개)</button>
-  </div>
 
-  <label style="margin-top:10px; font-size:12px;">앞면 꾸밈 아이콘 추가</label>
-  <div class="icon-toolbar">
-    <button type="button" class="icon-btn front-icon-btn" data-icon="♥" title="하트">♥</button>
-    <button type="button" class="icon-btn front-icon-btn" data-icon="★" title="별">★</button>
-    <button type="button" class="icon-btn front-icon-btn" data-icon="✦" title="반짝임">✦</button>
-    <button type="button" class="icon-btn front-icon-btn" data-icon="●" title="동그라미">●</button>
-  </div>
-
-  <div class="editor-shell">
-    <div class="stage">
-      <p class="stage-title">🖼️ 로고 편집 영역 (앞면)</p>
-      <div class="circle-workspace" id="circleWorkspace">
-        <img id="editorLogo" class="draggable-item" alt="편집 중인 로고 (앞면)" hidden draggable="false">
-      </div>
-      <p class="balloon-note">원 안에서 요소들을 끌어 이동</p>
+  <!-- [앞면] 디자인 편집 독립 박스 -->
+  <div class="section-box">
+    <span class="section-tag">FRONT (앞면 디자인 편집)</span>
+    
+    <label for="logoFile">앞면 로고 이미지 업로드 (JPG / PNG / WEBP)</label>
+    <input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp">
+    
+    <div style="margin-top:10px;">
+      <button id="addTextBtn" type="button" class="secondary" style="width:100%">+ 앞면 텍스트 추가 (최대 3개)</button>
     </div>
-    <div class="stage">
-      <p class="stage-title">🎈 풍선 시안 미리보기 (앞면)</p>
-      <div class="balloon-wrap">
-        <div class="balloon" id="balloon">
-          <div class="print-area" id="printArea">
-            <img id="balloonPrint" alt="풍선 인쇄 미리보기 (앞면)" hidden>
+
+    <label style="margin-top:12px; font-size:13px;">앞면 꾸밈 아이콘 추가</label>
+    <div class="icon-toolbar">
+      <button type="button" class="icon-btn front-icon-btn" data-icon="♥" title="하트">♥</button>
+      <button type="button" class="icon-btn front-icon-btn" data-icon="★" title="별">★</button>
+      <button type="button" class="icon-btn front-icon-btn" data-icon="✦" title="반짝임">✦</button>
+      <button type="button" class="icon-btn front-icon-btn" data-icon="●" title="동그라미">●</button>
+    </div>
+
+    <div class="editor-shell">
+      <div class="stage">
+        <p class="stage-title">🖼️ 로고 편집 영역 (앞면)</p>
+        <div class="circle-workspace" id="circleWorkspace">
+          <img id="editorLogo" class="draggable-item" alt="편집 중인 로고 (앞면)" hidden draggable="false">
+        </div>
+        <p class="balloon-note">원 안에서 요소들을 끌어 이동</p>
+      </div>
+      <div class="stage">
+        <p class="stage-title">🎈 풍선 시안 미리보기 (앞면)</p>
+        <div class="balloon-wrap">
+          <div class="balloon" id="balloon">
+            <div class="print-area" id="printArea">
+              <img id="balloonPrint" alt="풍선 인쇄 미리보기 (앞면)" hidden>
+            </div>
           </div>
         </div>
+        <p class="balloon-note">원형 편집 영역 바깥은 인쇄 시안에 표시되지 않습니다.</p>
       </div>
-      <p class="balloon-note">원형 편집 영역 바깥은 인쇄 시안에 표시되지 않습니다.</p>
     </div>
   </div>
 
-  <!-- 뒷면 영역 -->
-  <div id="backEditorSection" style="display:none; border-top:2px dashed var(--line); padding-top:16px; margin-top:20px;">
+  <!-- [뒷면] 디자인 편집 독립 박스 (양면 전용) -->
+  <div id="backEditorSection" class="section-box back-box" style="display:none;">
+    <span class="section-tag back-tag">BACK (뒷면 디자인 편집)</span>
+    
     <label for="backLogoFile">뒷면 로고 이미지 업로드 (JPG / PNG / WEBP)</label>
     <input id="backLogoFile" type="file" accept="image/png,image/jpeg,image/webp">
 
@@ -140,7 +153,7 @@ footer{max-width:1180px;margin:auto;padding:0 16px 28px;color:var(--muted);font-
       <button id="addBackTextBtn" type="button" class="secondary" style="width:100%">+ 뒷면 텍스트 추가 (최대 3개)</button>
     </div>
 
-    <label style="margin-top:10px; font-size:12px;">뒷면 꾸밈 아이콘 추가</label>
+    <label style="margin-top:12px; font-size:13px;">뒷면 꾸밈 아이콘 추가</label>
     <div class="icon-toolbar">
       <button type="button" class="icon-btn back-icon-btn" data-icon="♥" title="하트">♥</button>
       <button type="button" class="icon-btn back-icon-btn" data-icon="★" title="별">★</button>
@@ -219,7 +232,7 @@ footer{max-width:1180px;margin:auto;padding:0 16px 28px;color:var(--muted);font-
     <option value="1000up">1,000개 이상</option>
   </select>
 
-  <label for="balloonPreset" style="margin-top:14px;">풍선 색상 선택</label>
+  <label for="balloonPreset" style="margin-top:18px;">풍선 색상 선택</label>
   <select id="balloonPreset" aria-label="풍선 색상 선택">
     <optgroup label="Standard Colors (스탠다드)">
       <option value="#ffffff" selected>White (화이트)</option>
@@ -277,7 +290,7 @@ footer{max-width:1180px;margin:auto;padding:0 16px 28px;color:var(--muted);font-
     </optgroup>
   </select>
 
-  <label for="inkPreset" style="margin-top:14px;">실크 인쇄 잉크 색상 선택</label>
+  <label for="inkPreset" style="margin-top:18px;">실크 인쇄 잉크 색상 선택</label>
   <select id="inkPreset" aria-label="인쇄 잉크 색상 선택"></select>
   <p class="hint" id="inkHint">선택한 풍선 및 잉크 색상은 오른쪽 시안 미리보기 및 다운로드 이미지에 적용됩니다.</p>
 
@@ -372,11 +385,19 @@ document.querySelectorAll('.print-type-btn').forEach(btn => {
     e.target.classList.add('active');
     selectedPrintType = e.target.getAttribute('data-type');
 
-    if(selectedPrintType.includes('양면')){
-      backEditorSection.style.display = 'block';
-    } else {
-      backEditorSection.style.display = 'none';
+    const isDouble = selectedPrintType.includes('양면');
+    backEditorSection.style.display = isDouble ? 'block' : 'none';
+
+    // 단면 변경 시 뒷면 조절 컨트롤 요소 숨김 처리
+    const backLogoBlock = $('backLogoControlBlock');
+    if(backLogoBlock){
+      backLogoBlock.style.display = (isDouble && backProcessedCanvas) ? 'block' : 'none';
     }
+    backItems.forEach(item => {
+      const ctrl = $(`control-item-${item.id}`);
+      if(ctrl) ctrl.style.display = isDouble ? 'block' : 'none';
+    });
+
     syncPositions();
   });
 });
@@ -512,6 +533,10 @@ function renderControlUI(item){
   const div = document.createElement('div');
   div.className = 'control-item';
   div.id = `control-item-${item.id}`;
+
+  if(item.side === 'back' && !selectedPrintType.includes('양면')){
+    div.style.display = 'none';
+  }
 
   const isText = item.type === 'text';
   const sideLabel = item.side === 'back' ? '[뒷면]' : '[앞면]';
@@ -682,7 +707,9 @@ $('backLogoFile').addEventListener('change', e=>{
       backProcessedUrl = URL.createObjectURL(blob);
       backEditor.onload = () => {
         backEditor.removeAttribute('hidden'); backEditor.hidden = false;
-        $('backLogoControlBlock').style.display = 'block';
+        if(selectedPrintType.includes('양면')){
+          $('backLogoControlBlock').style.display = 'block';
+        }
         updatePrintImage('back'); syncPositions();
       };
       backEditor.src = backProcessedUrl;
@@ -751,7 +778,6 @@ function updatePrintImage(targetSide){
 makeDraggable(editor, null);
 makeDraggable(backEditor, null);
 
-/* 통합 이미지 다운로드 기능 (단면: 2000x1000 / 양면: 2000x2000 4분할 레이아웃) */
 $('downloadCombinedImage').addEventListener('click', () => {
   const isDoubleSide = selectedPrintType.includes('양면');
   const canvasW = 2000;
@@ -908,7 +934,6 @@ function renderBalloonOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetIte
   ctx.fillText(titleText, centerX, centerY + bh / 2 + 35);
 }
 
-// 초기화 실행 보장
 updateInkOptions();
 setBalloonColor($('balloonPreset').value);
 syncPositions();
