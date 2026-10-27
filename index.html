@@ -1,0 +1,214 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>만봉프린트 | 풍선 시안 제작</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 24px 16px;
+      font-family: Arial, sans-serif;
+      background: #f5f7fa; color: #252a34;
+    }
+    main { max-width: 760px; margin: auto; }
+    h1 { font-size: 27px; margin-bottom: 8px; }
+    .intro { color: #667085; line-height: 1.6; }
+    .panel {
+      background: white; padding: 22px;
+      border-radius: 18px; margin-top: 20px;
+      box-shadow: 0 4px 18px #1720330b;
+    }
+    label { display: block; font-weight: bold; margin: 18px 0 8px; }
+    input, select, button {
+      font: inherit; max-width: 100%;
+    }
+    input[type="file"], select {
+      width: 100%; padding: 11px;
+      border: 1px solid #d0d5dd; border-radius: 9px;
+      background: white;
+    }
+    input[type="color"] { width: 58px; height: 42px; }
+    .preview {
+      background: #eef2f6; border-radius: 14px;
+      padding: 24px 10px; text-align: center;
+    }
+    #balloon {
+      width: min(100%, 330px); aspect-ratio: 0.83;
+      margin: auto; position: relative;
+      border-radius: 49% 49% 46% 46% / 40% 40% 56% 56%;
+      background: radial-gradient(ellipse at 30% 22%, #ffffffaa, transparent 27%),
+                  radial-gradient(ellipse at 35% 25%, #fff8, transparent 40%),
+                  var(--balloon-color, #ffffff);
+      border: 1px solid #d6d9df;
+      box-shadow: inset -12px -15px 25px #0000000d,
+                  0 12px 22px #0000000c;
+      overflow: hidden;
+    }
+    #balloon::after {
+      content: ""; position: absolute; bottom: -1px; left: 45%;
+      width: 10%; height: 7%;
+      background: inherit; clip-path: polygon(0 0,100% 0,50% 100%);
+    }
+    #logo {
+      position: absolute; left: 50%; top: 48%;
+      transform: translate(-50%,-50%);
+      max-width: 70%; max-height: 50%;
+      object-fit: contain; cursor: grab;
+      touch-action: none; user-select: none;
+    }
+    .hint { color: #667085; font-size: 13px; line-height: 1.6; }
+    button {
+      border: 0; border-radius: 9px; padding: 12px 16px;
+      background: #202938; color: white; cursor: pointer;
+    }
+    .secondary { background: #e9edf2; color: #202938; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>만봉프린트 풍선 시안 제작</h1>
+  <p class="intro">풍선 색상을 고르고 로고를 올려 나만의 인쇄풍선 시안을 미리 확인해 보세요.</p>
+
+  <section class="panel">
+    <div class="preview">
+      <div id="balloon">
+        <img id="logo" alt="업로드한 로고 미리보기" hidden>
+      </div>
+      <p class="hint">로고를 마우스 또는 손가락으로 끌어 위치를 바꿔 보세요.</p>
+    </div>
+
+    <label for="balloonColor">① 풍선 색상</label>
+    <select id="balloonColor">
+      <option value="#ffffff">화이트</option>
+      <option value="#fff176">노랑</option>
+      <option value="#f7a8c8">핑크</option>
+      <option value="#a8d8ff">하늘색</option>
+      <option value="#ff7777">빨강</option>
+      <option value="#b8e6c1">연두</option>
+      <option value="#292929">검정</option>
+    </select>
+
+    <label for="logoFile">② 로고 이미지 업로드</label>
+    <input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp">
+    <p class="hint">첫 시제품은 PNG, JPG, WEBP 이미지로 테스트해 주세요. AI 파일 등 원본 파일 업로드는 다음 단계에서 추가합니다.</p>
+
+    <label for="logoSize">③ 로고 크기</label>
+    <input id="logoSize" type="range" min="15" max="85" value="55" style="width:100%">
+    <p class="hint">슬라이더를 움직여 로고 크기를 조절할 수 있습니다.</p>
+
+    <div class="actions">
+      <button id="download">시안 이미지 저장</button>
+      <button id="reset" class="secondary">처음 위치로</button>
+    </div>
+    <p class="hint">현재는 내 컴퓨터에 시안 이미지를 저장하는 기능만 있습니다. 서버 전송 및 주문 접수는 아직 연결되지 않았습니다.</p>
+  </section>
+</main>
+
+<script>
+  const balloon = document.getElementById('balloon');
+  const logo = document.getElementById('logo');
+  const fileInput = document.getElementById('logoFile');
+  const sizeInput = document.getElementById('logoSize');
+  let x = 50, y = 48, dragging = false, startX = 0, startY = 0;
+  let objectUrl = null;
+
+  document.getElementById('balloonColor').addEventListener('change', e => {
+    balloon.style.setProperty('--balloon-color', e.target.value);
+    balloon.style.backgroundColor = e.target.value;
+    balloon.style.backgroundImage =
+      `radial-gradient(ellipse at 30% 22%, #ffffffaa, transparent 27%),
+       radial-gradient(ellipse at 35% 25%, #ffffff55, transparent 40%)`;
+  });
+
+  fileInput.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      alert('이미지는 10MB 이하로 선택해 주세요.');
+      fileInput.value = '';
+      return;
+    }
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    objectUrl = URL.createObjectURL(file);
+    logo.onload = () => { logo.hidden = false; };
+    logo.src = objectUrl;
+  });
+
+  function updateLogo() {
+    logo.style.width = sizeInput.value + '%';
+    logo.style.left = x + '%';
+    logo.style.top = y + '%';
+  }
+  sizeInput.addEventListener('input', updateLogo);
+
+  logo.addEventListener('pointerdown', e => {
+    dragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    logo.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  logo.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const rect = balloon.getBoundingClientRect();
+    x = Math.max(10, Math.min(90, x + (e.clientX - startX) / rect.width * 100));
+    y = Math.max(10, Math.min(90, y + (e.clientY - startY) / rect.height * 100));
+    startX = e.clientX;
+    startY = e.clientY;
+    updateLogo();
+  });
+  logo.addEventListener('pointerup', () => dragging = false);
+  logo.addEventListener('pointercancel', () => dragging = false);
+
+  document.getElementById('reset').addEventListener('click', () => {
+    x = 50; y = 48; sizeInput.value = 55; updateLogo();
+  });
+
+  document.getElementById('download').addEventListener('click', () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 700; canvas.height = 850;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#eef2f6';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const rect = balloon.getBoundingClientRect();
+    const scale = Math.min(600 / rect.width, 740 / rect.height);
+    const w = rect.width * scale, h = rect.height * scale;
+    const left = (canvas.width - w) / 2, top = 30;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(left + w/2, top + h*0.45, w*0.49, h*0.48, 0, 0, Math.PI*2);
+    ctx.clip();
+    ctx.fillStyle = document.getElementById('balloonColor').value;
+    ctx.fillRect(left, top, w, h);
+    const shine = ctx.createRadialGradient(left+w*.3, top+h*.22, 2, left+w*.3, top+h*.22, w*.6);
+    shine.addColorStop(0, '#ffffff99');
+    shine.addColorStop(1, '#ffffff00');
+    ctx.fillStyle = shine;
+    ctx.fillRect(left, top, w, h);
+
+    if (logo.complete && logo.naturalWidth && !logo.hidden) {
+      const bw = w * Number(sizeInput.value) / 100;
+      const bh = bw * logo.naturalHeight / logo.naturalWidth;
+      ctx.drawImage(logo, left+w*x/100-bw/2, top+h*y/100-bh/2, bw, bh);
+    }
+    ctx.restore();
+
+    ctx.fillStyle = '#667085';
+    ctx.font = '18px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('만봉프린트 시안 미리보기 · 실제 인쇄 결과와 다를 수 있습니다', 350, 820);
+    const a = document.createElement('a');
+    a.download = '만봉프린트-풍선시안.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  });
+
+  updateLogo();
+</script>
+</body>
+</html>
