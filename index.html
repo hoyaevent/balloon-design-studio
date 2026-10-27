@@ -261,9 +261,9 @@ footer{max-width:1180px;margin:auto;padding:0 16px 28px;color:var(--muted);font-
   <label for="requestMemo">요청 사항</label><textarea id="requestMemo" rows="3" placeholder="인쇄 위치, 색상, 수량 등 추가 요청 사항"></textarea>
   <div class="notice"><strong>중요:</strong> 현재 화면은 미리보기용 1차 버전입니다. 제출 버튼은 전송 테스트용입니다.</div>
   
-  <!-- 새로 분리된 파일 다운로드 버튼 영역 -->
+  <!-- 파일 다운로드 버튼 영역 -->
   <div class="actions">
-    <button id="downloadLogoPNG" type="button" class="secondary">1. 로고 도안 PNG 저장 (#000000)</button>
+    <button id="downloadLogoPNG" type="button" class="secondary">1. 로고 도안 PNG 저장 (1000px, #000000)</button>
     <button id="downloadPreviewJPG" type="button">2. 풍선 시안 JPG 저장</button>
   </div>
   <p id="submitStatus" class="status muted">접수 및 이메일 전송은 Supabase와 이메일 서비스를 연결한 뒤 활성화됩니다.</p>
@@ -577,7 +577,7 @@ function renderProcessed(){
       syncPositions();
     };
     editor.src=processedUrl;
-    $('logoStatus').textContent='로고가 깔끔한 선명의 절대 검정(#000000)으로 처리되었습니다.';
+    $('logoStatus').textContent='로고가 고해상도 절대 검정(#000000)으로 처리되었습니다.';
   },'image/png');
 }
 
@@ -641,13 +641,17 @@ function setInkColor(v){
 }
 $('inkPreset').addEventListener('change', e=>setInkColor(e.target.value));
 
-/* 1. 편집 영역 원 안의 내용만 정사각형 PNG 저장 (#000000 절대검정) */
+/* 1. 고해상도 1000px × 1000px 정사각형 PNG 로고 도안 저장 (#000000 절대검정) */
 $('downloadLogoPNG').addEventListener('click', () => {
-  const size = 800; // 1:1 정사각형 캔버스 (800x800)
+  const size = 1000; // 해상도를 1000px로 상향 조정
   const c = document.createElement('canvas');
   c.width = size;
   c.height = size;
   const ctx = c.getContext('2d');
+  
+  // 고품질 렌더링을 위한 안티앨리어싱 설정
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
 
   // 로고 이미지 렌더링
   if (processedCanvas && !editor.hidden) {
@@ -680,7 +684,7 @@ $('downloadLogoPNG').addEventListener('click', () => {
   });
 
   const customerName = $('customerName').value.trim();
-  const fileName = customerName ? `${customerName}_만봉프린트-로고도안(#000000).png` : `만봉프린트-로고도안(#000000).png`;
+  const fileName = customerName ? `${customerName}_만봉프린트-로고도안(1000px).png` : `만봉프린트-로고도안(1000px).png`;
 
   const a = document.createElement('a');
   a.download = fileName;
@@ -688,23 +692,25 @@ $('downloadLogoPNG').addEventListener('click', () => {
   a.click();
 });
 
-/* 2. 화면 미리보기와 100% 동일한 정사각형 JPG 풍선 시안 저장 */
+/* 2. 화면 미리보기와 동일한 1000px 고화질 정사각형 풍선 시안 JPG 저장 */
 $('downloadPreviewJPG').addEventListener('click', () => {
-  const canvasSize = 1000; // 1:1 정사각형 고화질 캔버스 (1000x1000)
+  const canvasSize = 1000;
   const c = document.createElement('canvas');
   c.width = canvasSize;
   c.height = canvasSize;
   const ctx = c.getContext('2d');
 
-  // 전체 배경색 칠하기 (#f0f3f7)
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+
+  // 배경색 칠하기 (#f0f3f7)
   ctx.fillStyle = '#f0f3f7';
   ctx.fillRect(0, 0, canvasSize, canvasSize);
 
-  // 화면 미리보기 풍선의 1:1 정사각형 배치 기준 계산 (aspect-ratio 0.82 정확히 준수)
-  const bw = 550;               // 풍선 너비
-  const bh = bw / 0.82;         // 풍선 높이 (화면 css aspect-ratio: .82와 정확히 일치)
+  const bw = 550;
+  const bh = bw / 0.82;
   const bx = (canvasSize - bw) / 2;
-  const by = (canvasSize - bh) / 2 - 20; // 중앙 배치
+  const by = (canvasSize - bh) / 2 - 20;
 
   ctx.save();
   ctx.beginPath();
@@ -715,14 +721,13 @@ $('downloadPreviewJPG').addEventListener('click', () => {
   ctx.fillStyle = $('balloonPreset').value;
   ctx.fillRect(bx, by, bw, bh);
 
-  // 입체 광택 쉐이딩 효과 (화면 CSS 구현 그대로 캔버스에 재현)
+  // 광택 효과
   const sh = ctx.createRadialGradient(bx + bw * 0.29, by + bh * 0.18, 5, bx + bw * 0.29, by + bh * 0.18, bw * 0.68);
   sh.addColorStop(0, 'rgba(255,255,255,0.72)');
   sh.addColorStop(1, 'rgba(255,255,255,0)');
   ctx.fillStyle = sh;
   ctx.fillRect(bx, by, bw, bh);
 
-  // 인쇄 영역 산출 (원형 지름 및 중앙 위치 동기화)
   const workspaceWidth = workspace.getBoundingClientRect().width || 260;
   const balloonWidth = balloon.getBoundingClientRect().width || 250;
   const scaleFactor = bw / balloonWidth;
@@ -735,12 +740,13 @@ $('downloadPreviewJPG').addEventListener('click', () => {
   ctx.arc(printCenterX, printCenterY, printDiameter / 2, 0, Math.PI * 2);
   ctx.clip();
 
-  // 미리보기 로고 렌더링
   if (processedCanvas && !editor.hidden) {
     const temp = document.createElement('canvas');
     temp.width = processedCanvas.width;
     temp.height = processedCanvas.height;
     const t = temp.getContext('2d');
+    t.imageSmoothingEnabled = true;
+    t.imageSmoothingQuality = 'high';
     t.drawImage(processedCanvas, 0, 0);
     t.globalCompositeOperation = 'source-in';
     t.fillStyle = $('inkPreset').value;
@@ -753,7 +759,6 @@ $('downloadPreviewJPG').addEventListener('click', () => {
     ctx.drawImage(temp, logoCx - logoWidth / 2, logoCy - logoHeight / 2, logoWidth, logoHeight);
   }
 
-  // 미리보기 텍스트/아이콘 렌더링
   items.forEach(item => {
     ctx.save();
     const itemCx = printCenterX + (item.x / 100 - 0.5) * printDiameter;
@@ -776,7 +781,7 @@ $('downloadPreviewJPG').addEventListener('click', () => {
   ctx.restore();
   ctx.restore();
 
-  // 하단 브랜드 및 인쇄 방식 문구 표기
+  // 하단 텍스트
   ctx.fillStyle = '#667085';
   ctx.font = 'bold 22px sans-serif';
   ctx.textAlign = 'center';
@@ -784,7 +789,6 @@ $('downloadPreviewJPG').addEventListener('click', () => {
   ctx.font = '16px sans-serif';
   ctx.fillText('실제 인쇄 결과와 다를 수 있습니다.', canvasSize / 2, canvasSize - 30);
 
-  // 동적 파일명 설정: [고객명]_만봉프린트-풍선시안([인쇄방식]).jpg
   const customerName = $('customerName').value.trim();
   const fileName = customerName 
     ? `${customerName}_만봉프린트-풍선시안(${selectedPrintType}).jpg` 
