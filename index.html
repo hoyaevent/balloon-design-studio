@@ -58,7 +58,7 @@ button:focus,input:focus,select:focus{outline:2px solid #8ab4ff;outline-offset:1
 .section-tag{display:inline-block;padding:6px 14px;background:#334155;color:#fff;font-size:13px;font-weight:bold;border-radius:6px;margin-bottom:16px}
 .section-tag.back-tag{background:#475569}
 
-.print-type-tabs{display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;margin-bottom:20px;}
+.print-type-tabs{display:grid;grid-template-columns:repeat(2, 1fr);gap:10px;margin-bottom:20px;}
 .print-type-btn{background:#edf0f4;color:#333;padding:12px 8px;border-radius:10px;font-size:14px;border:1px solid var(--line);cursor:pointer;transition:all 0.2s;}
 .print-type-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:bold;}
 
@@ -116,7 +116,6 @@ footer{max-width:1200px;margin:auto;padding:0 16px 36px;color:var(--muted);font-
   .editor-shell{grid-template-columns:1fr 1fr;gap:8px}
   .stage{padding:8px}
   .circle-workspace,.balloon-wrap{width:100%}
-  .print-type-tabs{grid-template-columns:repeat(2, 1fr);}
 }
 
 @media(max-width:480px){
@@ -264,8 +263,6 @@ footer{max-width:1200px;margin:auto;padding:0 16px 36px;color:var(--muted);font-
   <div class="print-type-tabs">
     <button type="button" class="print-type-btn active" data-type="1도 단면">1도 단면</button>
     <button type="button" class="print-type-btn" data-type="1도 양면">1도 양면</button>
-    <button type="button" class="print-type-btn" data-type="2도 단면">2도 단면</button>
-    <button type="button" class="print-type-btn" data-type="2도 양면">2도 양면</button>
   </div>
 
   <label for="quantity">제작 수량 선택 *</label>
