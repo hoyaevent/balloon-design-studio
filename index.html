@@ -68,8 +68,19 @@ button:focus,input:focus,select:focus{outline:2px solid #8ab4ff;outline-offset:1
 .circle-workspace{width:min(100%,260px);aspect-ratio:1;border:2px solid #343b48;border-radius:50%;background:#fff;position:relative;margin:auto;overflow:hidden;touch-action:none}
 
 .balloon-wrap{width:min(100%,260px);aspect-ratio:.82;margin:auto;position:relative}
-.balloon{position:absolute;inset:2% 2% 7%;border-radius:49% 49% 45% 45% / 40% 40% 57% 57%;background:radial-gradient(ellipse at 29% 20%,#ffffffd9 0%,#ffffff40 14%,transparent 32%),radial-gradient(ellipse at 68% 75%,#0000000b,transparent 55%),var(--balloon,#fff);border:1px solid #d4d8df;box-shadow:inset -12px -14px 20px #0000000a,0 10px 18px #0000000b;overflow:hidden}
-.balloon:after{content:"";position:absolute;bottom:-1%;left:45%;width:10%;height:9%;background:var(--balloon,#fff);clip-path:polygon(0 0,100% 0,50% 100%)}
+.balloon{position:absolute;inset:2% 2% 7%;border-radius:0;background:transparent;border:0;box-shadow:none;overflow:visible}
+.balloon-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none}
+.balloon-photo[hidden]{display:none!important}
+.balloon-gallery{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0 4px}
+.balloon-card{background:#fff;color:#20242b;border:1px solid var(--line);padding:7px;border-radius:10px;min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px}
+.balloon-card img{width:100%;aspect-ratio:1;object-fit:contain;background:#f8fafc;border-radius:7px}
+.balloon-card span{font-size:12px;line-height:1.3;word-break:keep-all}
+.balloon-card.selected{border:2px solid #202938;background:#f1f5f9}
+.balloon-category-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+.balloon-category-tabs button{flex:1;background:#edf0f4;color:#20242b;padding:10px 8px;font-size:13px}
+.balloon-category-tabs button.active{background:#202938;color:white}
+.balloon-selection-info{font-size:13px;color:var(--muted);margin:8px 0}
+
 .print-area{position:absolute;left:50%;top:47%;width:52%;aspect-ratio:1;border-radius:50%;overflow:hidden;transform:translate(-50%,-50%);z-index:1;pointer-events:none}
 
 .draggable-item{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);touch-action:none;user-select:none;cursor:grab;display:inline-block;white-space:nowrap;line-height:1;color:#000000 !important;}
@@ -167,6 +178,7 @@ footer{max-width:1200px;margin:auto;padding:0 16px 36px;color:var(--muted);font-
           <p class="stage-title">🎈 풍선 시안 미리보기 (앞면)</p>
           <div class="balloon-wrap">
             <div class="balloon" id="balloon">
+              <img id="balloonPhoto" class="balloon-photo" alt="선택한 실제 풍선 이미지" draggable="false">
               <div class="print-area" id="printArea">
                 <img id="balloonPrint" alt="풍선 인쇄 미리보기 (앞면)" hidden>
               </div>
@@ -223,6 +235,7 @@ footer{max-width:1200px;margin:auto;padding:0 16px 36px;color:var(--muted);font-
           <p class="stage-title">🎈 풍선 시안 미리보기 (뒷면)</p>
           <div class="balloon-wrap">
             <div class="balloon" id="backBalloon">
+              <img id="backBalloonPhoto" class="balloon-photo" alt="선택한 실제 풍선 이미지 (뒷면)" draggable="false">
               <div class="print-area" id="backPrintArea">
                 <img id="backBalloonPrint" alt="풍선 인쇄 미리보기 (뒷면)" hidden>
               </div>
@@ -271,63 +284,14 @@ footer{max-width:1200px;margin:auto;padding:0 16px 36px;color:var(--muted);font-
     <option value="1000up">1,000개 이상</option>
   </select>
 
-  <label for="balloonPreset" style="margin-top:18px;">풍선 색상 선택</label>
-  <select id="balloonPreset" aria-label="풍선 색상 선택">
-    <optgroup label="Standard Colors (스탠다드)">
-      <option value="#ffffff" selected>White (화이트)</option>
-      <option value="#fff100">Yellow (노랑)</option>
-      <option value="#ffb6c1">Pink (핑크)</option>
-      <option value="#d10069">Fuchsia (푸시아)</option>
-      <option value="#e50012">Red (빨강)</option>
-      <option value="#ff6600">Orange (주황)</option>
-      <option value="#009944">Green (초록)</option>
-      <option value="#005a36">Dark Green (다크그린)</option>
-      <option value="#70c0e8">Light Blue (연하늘)</option>
-      <option value="#40e0d0">Mint (민트)</option>
-      <option value="#00a0e9">Aqua (아쿠아)</option>
-      <option value="#003399">Blue (파랑)</option>
-      <option value="#001d5a">Dark Blue (다크블루)</option>
-      <option value="#4b0082">Lavender/Purple (보라)</option>
-      <option value="#111111">Black (검정)</option>
-    </optgroup>
-    <optgroup label="Pearl Colors (펄)">
-      <option value="#f8f9fa">Pearl White (펄 화이트)</option>
-      <option value="#fffdd0">Pearl Cream (펄 크림)</option>
-      <option value="#ffee75">Pearl Yellow (펄 노랑)</option>
-      <option value="#ffb3ba">Pearl Pink (펄 핑크)</option>
-      <option value="#ffb380">Pearl Peach (펄 피치)</option>
-      <option value="#ff7f50">Pearl Orange (펄 주황)</option>
-      <option value="#e63946">Pearl Red (펄 빨강)</option>
-      <option value="#b57edc">Pearl Lavender (펄 라벤더)</option>
-      <option value="#8a2be2">Pearl Purple (펄 퍼플)</option>
-      <option value="#87ceeb">Pearl Light Blue (펄 연하늘)</option>
-      <option value="#4682b4">Pearl Blue (펄 파랑)</option>
-      <option value="#98ff98">Pearl Mint/Green (펄 연두)</option>
-      <option value="#ffd700">Pearl Gold (펄 골드)</option>
-      <option value="#c0c0c0">Pearl Silver (펄 실버)</option>
-      <option value="#222222">Pearl Black (펄 검정)</option>
-    </optgroup>
-    <optgroup label="Pastel & Pastel Matt Colors (파스텔)">
-      <option value="#fcd5ce">Pastel Peach (파스텔 피치)</option>
-      <option value="#fde2e4">Pastel Yellow (파스텔 노랑)</option>
-      <option value="#ffcad4">Pastel Pink (파스텔 핑크)</option>
-      <option value="#e2ece9">Pastel Lavender (파스텔 라벤더)</option>
-      <option value="#d8e2dc">Pastel Lime (파스텔 라임)</option>
-      <option value="#b1e5d9">Pastel Mint (파스텔 민트)</option>
-      <option value="#a2d2ff">Pastel Blue (파스텔 블루)</option>
-      <option value="#d4a373">Pastel Beige (파스텔 베이지)</option>
-      <option value="#6b705c">Pastel Olive (파스텔 올리브)</option>
-      <option value="#4a3b32">Pastel Brown (파스텔 브라운)</option>
-    </optgroup>
-    <optgroup label="Crystal & Chrome Colors (크리스탈 & 크롬)">
-      <option value="#ffffffd0">Crystal Clear (크리스탈 투명)</option>
-      <option value="#d4af37">Chrome Gold (크롬 골드)</option>
-      <option value="#a8a8a8">Chrome Silver (크롬 실버)</option>
-      <option value="#2a6f97">Chrome Blue (크롬 블루)</option>
-      <option value="#1b4332">Chrome Green (크롬 그린)</option>
-      <option value="#5a189a">Chrome Purple (크롬 퍼플)</option>
-    </optgroup>
-  </select>
+  <label>풍선 종류 및 색상 선택</label>
+  <div class="balloon-category-tabs" id="balloonCategoryTabs">
+    <button type="button" class="active" data-category="스탠다드">스탠다드</button>
+    <button type="button" data-category="파스텔.마카롱">파스텔 · 마카롱</button>
+    <button type="button" data-category="펄.크롬">펄 · 크롬</button>
+  </div>
+  <p class="balloon-selection-info" id="balloonSelectionInfo">풍선을 선택해 주세요.</p>
+  <div class="balloon-gallery" id="balloonGallery" aria-label="풍선 이미지 목록"></div>
 
   <label for="inkPreset" style="margin-top:18px;">실크 인쇄 잉크 색상 선택</label>
   <select id="inkPreset" aria-label="인쇄 잉크 색상 선택"></select>
@@ -348,10 +312,53 @@ footer{max-width:1200px;margin:auto;padding:0 16px 36px;color:var(--muted);font-
 </section>
 </div>
 </main>
-<footer>※ 화면의 풍선은 예상 시안용 모형이며, 실제 풍선 재질·조명·잉크·인쇄 공정에 따라 결과가 달라질 수 있습니다.</footer>
+<footer>※ 풍선 미리보기는 제공된 실제 풍선 사진을 사용합니다. 실제 풍선 재질·조명·잉크·인쇄 공정에 따라 결과가 달라질 수 있습니다.</footer>
 
 <script>
 const $=id=>document.getElementById(id);
+const balloonCatalog = [{"category": "스탠다드", "name": "그린", "src": "assets/balloons/스탠다드/그린.png"}, {"category": "스탠다드", "name": "라벤더", "src": "assets/balloons/스탠다드/라벤더.png"}, {"category": "스탠다드", "name": "라이트 그린", "src": "assets/balloons/스탠다드/라이트 그린.png"}, {"category": "스탠다드", "name": "라이트 블루", "src": "assets/balloons/스탠다드/라이트 블루.png"}, {"category": "스탠다드", "name": "레드", "src": "assets/balloons/스탠다드/레드.png"}, {"category": "스탠다드", "name": "미드 블루", "src": "assets/balloons/스탠다드/미드 블루.png"}, {"category": "스탠다드", "name": "블랙", "src": "assets/balloons/스탠다드/블랙.png"}, {"category": "스탠다드", "name": "블루", "src": "assets/balloons/스탠다드/블루.png"}, {"category": "스탠다드", "name": "아쿠아 블루", "src": "assets/balloons/스탠다드/아쿠아 블루.png"}, {"category": "스탠다드", "name": "옐로우", "src": "assets/balloons/스탠다드/옐로우.png"}, {"category": "스탠다드", "name": "오렌지", "src": "assets/balloons/스탠다드/오렌지.png"}, {"category": "스탠다드", "name": "푸치샤", "src": "assets/balloons/스탠다드/푸치샤.png"}, {"category": "스탠다드", "name": "핑크", "src": "assets/balloons/스탠다드/핑크.png"}, {"category": "스탠다드", "name": "화이트", "src": "assets/balloons/스탠다드/화이트.png"}, {"category": "파스텔.마카롱", "name": "라일락", "src": "assets/balloons/파스텔.마카롱/라일락.png"}, {"category": "파스텔.마카롱", "name": "라임 그린", "src": "assets/balloons/파스텔.마카롱/라임 그린.png"}, {"category": "파스텔.마카롱", "name": "레몬", "src": "assets/balloons/파스텔.마카롱/레몬.png"}, {"category": "파스텔.마카롱", "name": "로즈", "src": "assets/balloons/파스텔.마카롱/로즈.png"}, {"category": "파스텔.마카롱", "name": "마카 롱블루", "src": "assets/balloons/파스텔.마카롱/마카 롱블루.png"}, {"category": "파스텔.마카롱", "name": "마카롱 그린", "src": "assets/balloons/파스텔.마카롱/마카롱 그린.png"}, {"category": "파스텔.마카롱", "name": "마카롱 라벤더", "src": "assets/balloons/파스텔.마카롱/마카롱 라벤더.png"}, {"category": "파스텔.마카롱", "name": "마카롱 옐로우", "src": "assets/balloons/파스텔.마카롱/마카롱 옐로우.png"}, {"category": "파스텔.마카롱", "name": "마카롱 핑크", "src": "assets/balloons/파스텔.마카롱/마카롱 핑크.png"}, {"category": "파스텔.마카롱", "name": "브라운", "src": "assets/balloons/파스텔.마카롱/브라운.png"}, {"category": "파스텔.마카롱", "name": "블러쉬", "src": "assets/balloons/파스텔.마카롱/블러쉬.png"}, {"category": "파스텔.마카롱", "name": "아이보리", "src": "assets/balloons/파스텔.마카롱/아이보리.png"}, {"category": "파스텔.마카롱", "name": "올리브 그린", "src": "assets/balloons/파스텔.마카롱/올리브 그린.png"}, {"category": "파스텔.마카롱", "name": "초콜릿", "src": "assets/balloons/파스텔.마카롱/초콜릿.png"}, {"category": "파스텔.마카롱", "name": "틸", "src": "assets/balloons/파스텔.마카롱/틸.png"}, {"category": "파스텔.마카롱", "name": "피치", "src": "assets/balloons/파스텔.마카롱/피치.png"}, {"category": "펄.크롬", "name": "크롬 골드", "src": "assets/balloons/펄.크롬/크롬 골드.png"}, {"category": "펄.크롬", "name": "크롬 실버", "src": "assets/balloons/펄.크롬/크롬 실버.png"}, {"category": "펄.크롬", "name": "크롬 오키드", "src": "assets/balloons/펄.크롬/크롬 오키드.png"}, {"category": "펄.크롬", "name": "크롬 제이드 그린", "src": "assets/balloons/펄.크롬/크롬 제이드 그린.png"}, {"category": "펄.크롬", "name": "크롬 페르시안 블루", "src": "assets/balloons/펄.크롬/크롬 페르시안 블루.png"}, {"category": "펄.크롬", "name": "펄 골드", "src": "assets/balloons/펄.크롬/펄 골드.png"}, {"category": "펄.크롬", "name": "펄 그린", "src": "assets/balloons/펄.크롬/펄 그린.png"}, {"category": "펄.크롬", "name": "펄 라벤더", "src": "assets/balloons/펄.크롬/펄 라벤더.png"}, {"category": "펄.크롬", "name": "펄 라이트 그린", "src": "assets/balloons/펄.크롬/펄 라이트 그린.png"}, {"category": "펄.크롬", "name": "펄 라이트 라벤더", "src": "assets/balloons/펄.크롬/펄 라이트 라벤더.png"}, {"category": "펄.크롬", "name": "펄 라이트 블루", "src": "assets/balloons/펄.크롬/펄 라이트 블루.png"}, {"category": "펄.크롬", "name": "펄 라이트 옐로우", "src": "assets/balloons/펄.크롬/펄 라이트 옐로우.png"}, {"category": "펄.크롬", "name": "펄 라이트 핑크", "src": "assets/balloons/펄.크롬/펄 라이트 핑크.png"}, {"category": "펄.크롬", "name": "펄 라임 그린", "src": "assets/balloons/펄.크롬/펄 라임 그린.png"}, {"category": "펄.크롬", "name": "펄 로즈 골드", "src": "assets/balloons/펄.크롬/펄 로즈 골드.png"}, {"category": "펄.크롬", "name": "펄 루비 레드", "src": "assets/balloons/펄.크롬/펄 루비 레드.png"}, {"category": "펄.크롬", "name": "펄 민트 그린", "src": "assets/balloons/펄.크롬/펄 민트 그린.png"}, {"category": "펄.크롬", "name": "펄 버건디", "src": "assets/balloons/펄.크롬/펄 버건디.png"}, {"category": "펄.크롬", "name": "펄 블랙", "src": "assets/balloons/펄.크롬/펄 블랙.png"}, {"category": "펄.크롬", "name": "펄 사파이어 블루", "src": "assets/balloons/펄.크롬/펄 사파이어 블루.png"}, {"category": "펄.크롬", "name": "펄 실버", "src": "assets/balloons/펄.크롬/펄 실버.png"}, {"category": "펄.크롬", "name": "펄 아이보리", "src": "assets/balloons/펄.크롬/펄 아이보리.png"}, {"category": "펄.크롬", "name": "펄 아젤리아", "src": "assets/balloons/펄.크롬/펄 아젤리아.png"}, {"category": "펄.크롬", "name": "펄 아주르", "src": "assets/balloons/펄.크롬/펄 아주르.png"}, {"category": "펄.크롬", "name": "펄 에메랄드 그린", "src": "assets/balloons/펄.크롬/펄 에메랄드 그린.png"}, {"category": "펄.크롬", "name": "펄 옐로우", "src": "assets/balloons/펄.크롬/펄 옐로우.png"}, {"category": "펄.크롬", "name": "펄 오렌지", "src": "assets/balloons/펄.크롬/펄 오렌지.png"}, {"category": "펄.크롬", "name": "펄 퍼플", "src": "assets/balloons/펄.크롬/펄 퍼플.png"}, {"category": "펄.크롬", "name": "펄 푸치샤", "src": "assets/balloons/펄.크롬/펄 푸치샤.png"}, {"category": "펄.크롬", "name": "펄 피치", "src": "assets/balloons/펄.크롬/펄 피치.png"}, {"category": "펄.크롬", "name": "펄 핑크", "src": "assets/balloons/펄.크롬/펄 핑크.png"}, {"category": "펄.크롬", "name": "펄 화이트", "src": "assets/balloons/펄.크롬/펄 화이트.png"}];
+let selectedBalloonImage = null;
+let selectedBalloonEntry = null;
+const balloonImageCache = new Map();
+function loadBalloonImage(entry){
+  if(balloonImageCache.has(entry.src)) return balloonImageCache.get(entry.src);
+  const img = new Image();
+  img.src = entry.src;
+  balloonImageCache.set(entry.src, img);
+  return img;
+}
+function renderBalloonGallery(category='스탠다드'){
+  const gallery=$('balloonGallery');
+  gallery.innerHTML='';
+  balloonCatalog.filter(item=>item.category===category).forEach(item=>{
+    const card=document.createElement('button');
+    card.type='button';
+    card.className='balloon-card'+(selectedBalloonEntry?.src===item.src?' selected':'');
+    card.setAttribute('aria-label',item.name+' 풍선 선택');
+    const img=document.createElement('img');
+    img.src=item.src; img.alt=item.name; img.loading='lazy';
+    const name=document.createElement('span'); name.textContent=item.name;
+    card.append(img,name);
+    card.addEventListener('click',()=>selectBalloon(item));
+    gallery.appendChild(card);
+  });
+}
+function selectBalloon(entry){
+  selectedBalloonEntry=entry;
+  const img=loadBalloonImage(entry);
+  const apply=()=>{
+    selectedBalloonImage=img;
+    $('balloonPhoto').src=entry.src;
+    $('backBalloonPhoto').src=entry.src;
+    $('balloonPhoto').hidden=false;
+    $('backBalloonPhoto').hidden=false;
+    $('balloonSelectionInfo').textContent='선택한 풍선: '+entry.category.replace('.',' · ')+' / '+entry.name;
+    renderBalloonGallery(entry.category);
+  };
+  if(img.complete && img.naturalWidth) apply();
+  else { img.onload=apply; img.onerror=()=>alert('풍선 이미지를 불러오지 못했습니다. assets/balloons 폴더가 index.html과 함께 배포되었는지 확인해 주세요.'); }
+}
+
 
 const editor=$('editorLogo'), print=$('balloonPrint'), workspace=$('circleWorkspace');
 const balloon=$('balloon'), printArea=$('printArea');
@@ -763,10 +770,16 @@ $('resetPositions').addEventListener('click', ()=>{
 });
 
 function setBalloonColor(v){
-  balloon.style.setProperty('--balloon', v); balloon.style.backgroundColor=v;
-  backBalloon.style.setProperty('--balloon', v); backBalloon.style.backgroundColor=v;
+  balloon.style.setProperty('--balloon', v);
+  backBalloon.style.setProperty('--balloon', v);
 }
-$('balloonPreset').addEventListener('change', e=>setBalloonColor(e.target.value));
+$('balloonCategoryTabs').querySelectorAll('button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    $('balloonCategoryTabs').querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderBalloonGallery(btn.dataset.category);
+  });
+});
 
 function setInkColor(v){
   inkColor=v;
@@ -808,6 +821,10 @@ makeDraggable(editor, null);
 makeDraggable(backEditor, null);
 
 $('downloadCombinedImage').addEventListener('click', () => {
+  if(!selectedBalloonImage || !selectedBalloonImage.complete || !selectedBalloonImage.naturalWidth){
+    alert('선택한 풍선 이미지를 불러오는 중입니다. 잠시 후 다시 저장해 주세요.');
+    return;
+  }
   const isDoubleSide = selectedPrintType.includes('양면');
   const canvasW = 2000;
   const canvasH = isDoubleSide ? 2000 : 1000;
@@ -894,18 +911,13 @@ function renderBalloonOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetIte
   const bx = centerX - bw / 2, by = centerY - bh / 2 - 20;
 
   ctx.save();
-  ctx.beginPath();
-  ctx.ellipse(bx + bw / 2, by + bh * 0.46, bw * 0.49, bh * 0.46, 0, 0, Math.PI * 2);
-  ctx.clip();
 
-  ctx.fillStyle = $('balloonPreset').value;
-  ctx.fillRect(bx, by, bw, bh);
-
-  const sh = ctx.createRadialGradient(bx + bw * 0.29, by + bh * 0.18, 5, bx + bw * 0.29, by + bh * 0.18, bw * 0.68);
-  sh.addColorStop(0, 'rgba(255,255,255,0.72)');
-  sh.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = sh;
-  ctx.fillRect(bx, by, bw, bh);
+  if(selectedBalloonImage && selectedBalloonImage.complete && selectedBalloonImage.naturalWidth){
+    ctx.drawImage(selectedBalloonImage, bx, by, bw, bh);
+  } else {
+    ctx.fillStyle = '#f1f3f5';
+    ctx.fillRect(bx, by, bw, bh);
+  }
 
   const workspaceWidth = workspace.getBoundingClientRect().width || 260;
   const balloonWidth = balloon.getBoundingClientRect().width || 250;
@@ -964,7 +976,8 @@ function renderBalloonOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetIte
 }
 
 updateInkOptions();
-setBalloonColor($('balloonPreset').value);
+renderBalloonGallery('스탠다드');
+selectBalloon(balloonCatalog.find(item=>item.category==='스탠다드' && item.name==='화이트') || balloonCatalog[0]);
 syncPositions();
 </script>
 </body>
