@@ -67,9 +67,9 @@ button:focus,input:focus,select:focus{outline:2px solid #8ab4ff;outline-offset:1
 .stage-title{font-size:13px;font-weight:700;margin:0 0 12px;color:#1e293b;}
 .circle-workspace{width:min(100%,260px);aspect-ratio:1;border:2px solid #343b48;border-radius:50%;background:#fff;position:relative;margin:auto;overflow:hidden;touch-action:none}
 
-.balloon-wrap{width:min(100%,260px);aspect-ratio:.82;margin:auto;position:relative}
+.balloon-wrap{width:min(100%,260px);aspect-ratio:1 / 1;margin:auto;position:relative}
 .balloon{position:absolute;inset:2% 2% 7%;border-radius:0;background:transparent;border:0;box-shadow:none;overflow:visible}
-.balloon-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none}
+.balloon-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none}
 .balloon-photo[hidden]{display:none!important}
 .balloon-gallery{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0 4px}
 .balloon-card{background:#fff;color:#20242b;border:1px solid var(--line);padding:7px;border-radius:10px;min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px}
