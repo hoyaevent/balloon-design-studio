@@ -81,8 +81,19 @@ button:focus,input:focus,select:focus{outline:2px solid #8ab4ff;outline-offset:1
 .balloon-category-tabs button.active{background:#202938;color:white}
 .balloon-selection-info{font-size:13px;color:var(--muted);margin:8px 0}
 
-.print-area{position:absolute;left:50%;top:47%;width:52%;aspect-ratio:1;border-radius:50%;overflow:hidden;transform:translate(-50%,-50%);z-index:1;pointer-events:none}
-
+.print-area{
+  position:absolute;
+  left: 50%;
+  top: 45%; /* 풍선의 중심부에 위치하도록 조정 */
+  width: 38%; /* 가이드라인 원 크기에 맞게 축소 */
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  pointer-events:none;
+}
+  
 .draggable-item{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);touch-action:none;user-select:none;cursor:grab;display:inline-block;white-space:nowrap;line-height:1;color:#000000 !important;}
 .draggable-item.dragging{cursor:grabbing}
 #editorLogo, #backEditorLogo{object-fit:contain;max-width:none}
