@@ -832,6 +832,10 @@ $('downloadCombinedImage').addEventListener('click', () => {
   c.width = canvasW; c.height = canvasH;
   const ctx = c.getContext('2d');
 
+  // 💡 [추가된 부분] 다운로드 이미지 전체 배경을 깔끔한 흰색(#ffffff)으로 채웁니다.
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, c.width, c.height);
+
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
 
