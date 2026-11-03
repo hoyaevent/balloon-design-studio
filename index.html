@@ -911,20 +911,21 @@ function renderLogoWorkspaceOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, tar
 }
 
 function renderBalloonOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetItems, lSize, titleText){
-  const bw = 550;
-  // 실제 이미지의 원본 비율을 계산하여 세로(bh)를 결정합니다. (비율 왜곡 방지)
+  // 1. 풍선 크기를 1.5배 크게 설정 (550 -> 825) 및 원본 비율 고정
+  const bw = 825; 
   const balloonAspect = (selectedBalloonImage && selectedBalloonImage.naturalWidth) 
     ? (selectedBalloonImage.naturalHeight / selectedBalloonImage.naturalWidth) 
     : (1 / 0.82);
   const bh = bw * balloonAspect;
   const bx = centerX - bw / 2, by = centerY - bh / 2 - 20;
-  
+
   ctx.save();
 
+  // 2. 선택된 풍선 이미지 그리기 (불러오는 중이 아니면 흰색 배경 채우기)
   if(selectedBalloonImage && selectedBalloonImage.complete && selectedBalloonImage.naturalWidth){
     ctx.drawImage(selectedBalloonImage, bx, by, bw, bh);
   } else {
-    ctx.fillStyle = '#f1f3f5';
+    ctx.fillStyle = '#ffffff'; 
     ctx.fillRect(bx, by, bw, bh);
   }
 
@@ -950,7 +951,7 @@ function renderBalloonOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetIte
     t.fillStyle = inkColor;
     t.fillRect(0, 0, temp.width, temp.height);
 
-    const logoWidth = workspaceWidth * 0.52 * (lSize / 100) * scaleFactor;
+    const logoWidth = workspaceWidth * 0.52 * (lSize / 100) * scaleFactor * 0.6;
     const logoHeight = logoWidth * (temp.height / temp.width);
     const logoCx = printCenterX + (lX / 100 - 0.5) * printDiameter;
     const logoCy = printCenterY + (lY / 100 - 0.5) * printDiameter;
