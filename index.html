@@ -907,9 +907,14 @@ function renderLogoWorkspaceOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, tar
 }
 
 function renderBalloonOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetItems, lSize, titleText){
-  const bw = 550, bh = bw / 0.82;
+  const bw = 550;
+  // 실제 이미지의 원본 비율을 계산하여 세로(bh)를 결정합니다. (비율 왜곡 방지)
+  const balloonAspect = (selectedBalloonImage && selectedBalloonImage.naturalWidth) 
+    ? (selectedBalloonImage.naturalHeight / selectedBalloonImage.naturalWidth) 
+    : (1 / 0.82);
+  const bh = bw * balloonAspect;
   const bx = centerX - bw / 2, by = centerY - bh / 2 - 20;
-
+  
   ctx.save();
 
   if(selectedBalloonImage && selectedBalloonImage.complete && selectedBalloonImage.naturalWidth){
