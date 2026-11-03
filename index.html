@@ -470,7 +470,7 @@ function syncPositions(){
   const workspaceRect=workspace.getBoundingClientRect();
   const balloonRect=balloon.getBoundingClientRect();
   if(workspaceRect.width && balloonRect.width){
-    const printDiameter=workspaceRect.width*0.38;
+    const printDiameter=workspaceRect.width*0.34;
     printArea.style.width=(printDiameter/balloonRect.width*100)+'%';
   }
 
@@ -490,7 +490,7 @@ function syncPositions(){
     const backWsRect = backWorkspace.getBoundingClientRect();
     const backBalRect = backBalloon.getBoundingClientRect();
     if(backWsRect.width && backBalRect.width){
-      const printDiam2 = backWsRect.width * 0.38;
+      const printDiam2 = backWsRect.width * 0.34;
       backPrintArea.style.width = (printDiam2 / backBalRect.width * 100) + '%';
     }
     // 💡 [화면 미리보기 뒷면 로고 크기 축소 반영]
@@ -948,7 +948,7 @@ function renderBalloonOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetIte
   const workspaceWidth = workspace.getBoundingClientRect().width || 260;
   const balloonWidth = balloon.getBoundingClientRect().width || 250;
   const scaleFactor = bw / balloonWidth;
-  const printDiameter = workspaceWidth * 0.38 * scaleFactor;
+  const printDiameter = workspaceWidth * 0.34 * scaleFactor;
   const printCenterX = bx + bw / 2;
   const printCenterY = by + bh * 0.5;
 
@@ -967,7 +967,7 @@ function renderBalloonOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetIte
     t.fillStyle = inkColor;
     t.fillRect(0, 0, temp.width, temp.height);
 
-    const logoWidth = workspaceWidth * 0.38 * (lSize / 100) * scaleFactor * 0.6;
+    const logoWidth = workspaceWidth * 0.34 * (lSize / 100) * scaleFactor * 0.6;
     const logoHeight = logoWidth * (temp.height / temp.width);
     const logoCx = printCenterX + (lX / 100 - 0.5) * printDiameter;
     const logoCy = printCenterY + (lY / 100 - 0.5) * printDiameter;
