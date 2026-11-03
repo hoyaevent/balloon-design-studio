@@ -477,7 +477,7 @@ function syncPositions(){
   // 💡 [화면 미리보기 로고 크기 축소 반영] 다운로드 시안과 동일하게 0.6배율 적용
   print.style.left=logoX+'%';
   print.style.top=logoY+'%';
-  print.style.width=(logoSize * 0.6)+'%';
+  print.style.width=logoSize+'%';
   print.style.height='auto';
   $('sizeLabel').textContent=logoSize+'%';
 
@@ -496,7 +496,7 @@ function syncPositions(){
     // 💡 [화면 미리보기 뒷면 로고 크기 축소 반영]
     backPrint.style.left = backLogoX + '%';
     backPrint.style.top = backLogoY + '%';
-    backPrint.style.width = (backLogoSize * 0.6) + '%';
+    backPrint.style.width = backLogoSize + '%';
     backPrint.style.height = 'auto';
     $('backSizeLabel').textContent=backLogoSize+'%';
   }
@@ -514,7 +514,7 @@ function syncPositions(){
       item.printEl.style.left = item.x + '%';
       item.printEl.style.top = item.y + '%';
       // 💡 [화면 미리보기 텍스트/아이콘 크기 축소 반영] 0.5배 -> 0.3배로 조정
-      item.printEl.style.fontSize = (item.size * 0.3 * scale) + 'px';
+      item.printEl.style.fontSize = (item.size * 0.42 * scale) + 'px';
       item.printEl.style.color = inkColor;
     }
   });
@@ -530,7 +530,7 @@ function syncPositions(){
       item.printEl.style.left = item.x + '%';
       item.printEl.style.top = item.y + '%';
       // 💡 [화면 미리보기 뒷면 텍스트/아이콘 크기 축소 반영]
-      item.printEl.style.fontSize = (item.size * 0.3 * scale) + 'px';
+      item.printEl.style.fontSize = (item.size * 0.42 * scale) + 'px';
       item.printEl.style.color = inkColor;
     }
   });
@@ -967,7 +967,7 @@ function renderBalloonOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetIte
     t.fillStyle = inkColor;
     t.fillRect(0, 0, temp.width, temp.height);
 
-    const logoWidth = workspaceWidth * 0.34 * (lSize / 100) * scaleFactor * 0.6;
+    const logoWidth = printDiameter * (lSize / 100);
     const logoHeight = logoWidth * (temp.height / temp.width);
     const logoCx = printCenterX + (lX / 100 - 0.5) * printDiameter;
     const logoCy = printCenterY + (lY / 100 - 0.5) * printDiameter;
@@ -978,7 +978,7 @@ function renderBalloonOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetIte
     ctx.save();
     const itemCx = printCenterX + (item.x / 100 - 0.5) * printDiameter;
     const itemCy = printCenterY + (item.y / 100 - 0.5) * printDiameter;
-    const fontSize = item.size * 0.5 * scaleFactor;
+    const fontSize = item.size * 0.42 * (workspaceWidth / 260) * scaleFactor;
 
     let fontName = 'sans-serif';
     if (item.font === 'font-gungseo') fontName = 'Gungsuh, Batang, serif';
