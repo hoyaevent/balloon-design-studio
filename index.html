@@ -470,7 +470,7 @@ function syncPositions(){
   const workspaceRect=workspace.getBoundingClientRect();
   const balloonRect=balloon.getBoundingClientRect();
   if(workspaceRect.width && balloonRect.width){
-    const printDiameter=workspaceRect.width*0.34;
+    const printDiameter=workspaceRect.width*0.38;
     printArea.style.width=(printDiameter/balloonRect.width*100)+'%';
   }
 
@@ -490,7 +490,7 @@ function syncPositions(){
     const backWsRect = backWorkspace.getBoundingClientRect();
     const backBalRect = backBalloon.getBoundingClientRect();
     if(backWsRect.width && backBalRect.width){
-      const printDiam2 = backWsRect.width * 0.34;
+      const printDiam2 = backWsRect.width * 0.38;
       backPrintArea.style.width = (printDiam2 / backBalRect.width * 100) + '%';
     }
     // 💡 [화면 미리보기 뒷면 로고 크기 축소 반영]
@@ -514,7 +514,7 @@ function syncPositions(){
       item.printEl.style.left = item.x + '%';
       item.printEl.style.top = item.y + '%';
       // 💡 [화면 미리보기 텍스트/아이콘 크기 축소 반영] 0.5배 -> 0.3배로 조정
-      item.printEl.style.fontSize = (item.size * 0.42 * scale) + 'px';
+      item.printEl.style.fontSize = (item.size * 0.38 * scale) + 'px';
       item.printEl.style.color = inkColor;
     }
   });
@@ -530,7 +530,7 @@ function syncPositions(){
       item.printEl.style.left = item.x + '%';
       item.printEl.style.top = item.y + '%';
       // 💡 [화면 미리보기 뒷면 텍스트/아이콘 크기 축소 반영]
-      item.printEl.style.fontSize = (item.size * 0.42 * scale) + 'px';
+      item.printEl.style.fontSize = (item.size * 0.38 * scale) + 'px';
       item.printEl.style.color = inkColor;
     }
   });
@@ -948,7 +948,7 @@ function renderBalloonOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetIte
   const workspaceWidth = workspace.getBoundingClientRect().width || 260;
   const balloonWidth = balloon.getBoundingClientRect().width || 250;
   const scaleFactor = bw / balloonWidth;
-  const printDiameter = workspaceWidth * 0.34 * scaleFactor;
+  const printDiameter = workspaceWidth * 0.38 * scaleFactor;
   const printCenterX = bx + bw / 2;
   const printCenterY = by + bh * 0.5;
 
@@ -978,7 +978,7 @@ function renderBalloonOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetIte
     ctx.save();
     const itemCx = printCenterX + (item.x / 100 - 0.5) * printDiameter;
     const itemCy = printCenterY + (item.y / 100 - 0.5) * printDiameter;
-    const fontSize = item.size * 0.42 * (workspaceWidth / 260) * scaleFactor;
+    const fontSize = item.size * 0.38 * (workspaceWidth / 260) * scaleFactor;
 
     let fontName = 'sans-serif';
     if (item.font === 'font-gungseo') fontName = 'Gungsuh, Batang, serif';
