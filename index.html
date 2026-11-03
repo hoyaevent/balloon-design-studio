@@ -470,7 +470,7 @@ function syncPositions(){
   const workspaceRect=workspace.getBoundingClientRect();
   const balloonRect=balloon.getBoundingClientRect();
   if(workspaceRect.width && balloonRect.width){
-    const printDiameter=workspaceRect.width*0.32;
+    const printDiameter=workspaceRect.width*0.45;
     printArea.style.width=(printDiameter/balloonRect.width*100)+'%';
   }
 
@@ -948,7 +948,7 @@ function renderBalloonOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetIte
   const workspaceWidth = workspace.getBoundingClientRect().width || 260;
   const balloonWidth = balloon.getBoundingClientRect().width || 250;
   const scaleFactor = bw / balloonWidth;
-  const printDiameter = workspaceWidth * 0.32 * scaleFactor;
+  const printDiameter = workspaceWidth * 0.45 * scaleFactor;
   const printCenterX = bx + bw / 2;
   const printCenterY = by + bh * 0.47;
 
