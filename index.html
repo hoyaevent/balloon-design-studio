@@ -869,10 +869,10 @@ $('downloadCombinedImage').addEventListener('click', () => {
     ctx.beginPath(); ctx.moveTo(1000, 40); ctx.lineTo(1000, 1960); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(40, 1000); ctx.lineTo(1960, 1000); ctx.stroke();
 
-    renderLogoWorkspaceOnCanvas(ctx, 500, 500, processedCanvas, logoX, logoY, items, Number($('logoSize').value), '앞면 인쇄 로고 도안 (#000000)');
+    renderLogoWorkspaceOnCanvas(ctx, 500, 500, processedCanvas, logoX, logoY, items, Number($('logoSize').value), '앞면 인쇄 로고 도안');
     renderBalloonOnCanvas(ctx, 1500, 500, processedCanvas, logoX, logoY, items, Number($('logoSize').value), '앞면 풍선 미리보기 시안');
 
-    renderLogoWorkspaceOnCanvas(ctx, 500, 1500, backProcessedCanvas, backLogoX, backLogoY, backItems, Number($('backLogoSize').value), '뒷면 인쇄 로고 도안 (#000000)');
+    renderLogoWorkspaceOnCanvas(ctx, 500, 1500, backProcessedCanvas, backLogoX, backLogoY, backItems, Number($('backLogoSize').value), '뒷면 인쇄 로고 도안');
     renderBalloonOnCanvas(ctx, 1500, 1500, backProcessedCanvas, backLogoX, backLogoY, backItems, Number($('backLogoSize').value), '뒷면 풍선 미리보기 시안');
   }
 
