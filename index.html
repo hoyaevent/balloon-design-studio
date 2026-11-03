@@ -462,9 +462,10 @@ function syncPositions(){
     printArea.style.width=(printDiameter/balloonRect.width*100)+'%';
   }
 
+  // 💡 [화면 미리보기 로고 크기 축소 반영] 다운로드 시안과 동일하게 0.6배율 적용
   print.style.left=logoX+'%';
   print.style.top=logoY+'%';
-  print.style.width=logoSize+'%';
+  print.style.width=(logoSize * 0.6)+'%';
   print.style.height='auto';
   $('sizeLabel').textContent=logoSize+'%';
 
@@ -480,9 +481,10 @@ function syncPositions(){
       const printDiam2 = backWsRect.width * 0.52;
       backPrintArea.style.width = (printDiam2 / backBalRect.width * 100) + '%';
     }
+    // 💡 [화면 미리보기 뒷면 로고 크기 축소 반영]
     backPrint.style.left = backLogoX + '%';
     backPrint.style.top = backLogoY + '%';
-    backPrint.style.width = backLogoSize + '%';
+    backPrint.style.width = (backLogoSize * 0.6) + '%';
     backPrint.style.height = 'auto';
     $('backSizeLabel').textContent=backLogoSize+'%';
   }
@@ -499,7 +501,8 @@ function syncPositions(){
     if(item.printEl){
       item.printEl.style.left = item.x + '%';
       item.printEl.style.top = item.y + '%';
-      item.printEl.style.fontSize = (item.size * 0.5 * scale) + 'px';
+      // 💡 [화면 미리보기 텍스트/아이콘 크기 축소 반영] 0.5배 -> 0.3배로 조정
+      item.printEl.style.fontSize = (item.size * 0.3 * scale) + 'px';
       item.printEl.style.color = inkColor;
     }
   });
@@ -514,7 +517,8 @@ function syncPositions(){
     if(item.printEl){
       item.printEl.style.left = item.x + '%';
       item.printEl.style.top = item.y + '%';
-      item.printEl.style.fontSize = (item.size * 0.5 * scale) + 'px';
+      // 💡 [화면 미리보기 뒷면 텍스트/아이콘 크기 축소 반영]
+      item.printEl.style.fontSize = (item.size * 0.3 * scale) + 'px';
       item.printEl.style.color = inkColor;
     }
   });
