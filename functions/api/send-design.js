@@ -125,26 +125,19 @@ export async function onRequestPost({ request, env }) {
       }, 400);
     }
 
-    // 4. 첨부 파일 목록
+// ================================================
+// 4. 첨부 파일 목록
+// ================================================
+
 const fileList = [
   {
-    key: 'frontLogo',
-    label: '앞면 로고 원본',
-    required: false
-  },
-  {
-    key: 'backLogo',
-    label: '뒷면 로고 원본',
-    required: false
-  },
-  {
-    key: 'frontPrintPng',
-    label: '앞면 인쇄용 PNG',
+    key: 'frontSvg',
+    label: '앞면 인쇄용 SVG',
     required: true
   },
   {
-    key: 'backPrintPng',
-    label: '뒷면 인쇄용 PNG',
+    key: 'backSvg',
+    label: '뒷면 인쇄용 SVG',
     required: printType.includes('양면')
   },
   {
@@ -154,93 +147,89 @@ const fileList = [
   }
 ];
 
-    const attachments = [];
-    let totalSize = 0;
+const attachments = [];
+let totalSize = 0;
 
-    // 파일 하나 최대 10MB
-    const MAX_FILE_SIZE = 10 * 1024 * 1024;
+// 파일 하나 최대 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-    // 모든 파일 합계 최대 20MB
-    const MAX_TOTAL_SIZE = 20 * 1024 * 1024;
+// 모든 파일 합계 최대 20MB
+const MAX_TOTAL_SIZE = 20 * 1024 * 1024;
 
-    // 5. 업로드한 파일 확인 및 첨부 준비
-    for (const item of fileList) {
 
-      const file = form.get(item.key);
+// ================================================
+// 5. 업로드한 파일 확인 및 첨부 준비
+// ================================================
 
-      if (!file) {
+for (const item of fileList) {
 
-        if (item.required) {
-          return jsonResponse({
-            error: '통합 시안 이미지가 전달되지 않았습니다.'
-          }, 400);
-        }
+  const file = form.get(item.key);
 
-        continue;
-      }
+  // 필수 파일이 전달되지 않은 경우
+  if (!file) {
 
-      if (!isFile(file) || file.size <= 0) {
-        return jsonResponse({
-          error: '첨부 파일을 확인해 주세요.'
-        }, 400);
-      }
-
-      // 앞면 및 뒷면 로고는 이미지 파일만 허용
-let allowedTypes;
-
-if (item.key === 'combinedImage') {
-
-  allowedTypes = ['image/jpeg'];
-
-} else if (
-  item.key === 'frontPrintPng' ||
-  item.key === 'backPrintPng'
-) {
-
-  allowedTypes = ['image/png'];
-
-} else {
-
-  allowedTypes = [
-    'image/png',
-    'image/jpeg',
-    'image/webp'
-  ];
-
-}
-      if (!allowedTypes.includes(file.type)) {
-        return jsonResponse({
-          error: 'PNG, JPG, JPEG, WEBP 파일만 첨부할 수 있습니다.'
-        }, 400);
-      }
-
-      // 개별 파일 용량 확인
-      if (file.size > MAX_FILE_SIZE) {
-        return jsonResponse({
-          error: '이미지 파일 하나의 용량은 10MB 이하로 제한됩니다.'
-        }, 400);
-      }
-
-      totalSize += file.size;
-
-      // 전체 파일 용량 확인
-      if (totalSize > MAX_TOTAL_SIZE) {
-        return jsonResponse({
-          error: '첨부 파일 전체 용량은 20MB 이하로 제한됩니다.'
-        }, 400);
-      }
-
-      // 원본 파일 내용을 그대로 읽기
-      const buffer = await file.arrayBuffer();
-
-      // 이메일 첨부 자료로 변환
-      attachments.push({
-        filename: safeFilename(file.name || item.label + '.jpg'),
-        content: toBase64(buffer),
-        content_type: file.type
-      });
+    if (item.required) {
+      return jsonResponse({
+        error: `${item.label} 파일이 전달되지 않았습니다.`
+      }, 400);
     }
 
+    continue;
+  }
+
+  // 실제 파일인지 확인
+  if (!isFile(file) || file.size <= 0) {
+    return jsonResponse({
+      error: '첨부 파일을 확인해 주세요.'
+    }, 400);
+  }
+
+  // 파일 종류별 허용 형식 확인
+  let allowedTypes;
+
+  if (item.key === 'frontSvg' || item.key === 'backSvg') {
+
+    allowedTypes = ['image/svg+xml'];
+
+  } else if (item.key === 'combinedImage') {
+
+    allowedTypes = ['image/jpeg'];
+
+  }
+
+  if (!allowedTypes.includes(file.type)) {
+    return jsonResponse({
+      error: `${item.label} 파일 형식이 올바르지 않습니다.`
+    }, 400);
+  }
+
+  // 개별 파일 용량 확인
+  if (file.size > MAX_FILE_SIZE) {
+    return jsonResponse({
+      error: '첨부 파일 하나의 용량은 10MB 이하로 제한됩니다.'
+    }, 400);
+  }
+
+  totalSize += file.size;
+
+  // 전체 파일 용량 확인
+  if (totalSize > MAX_TOTAL_SIZE) {
+    return jsonResponse({
+      error: '첨부 파일 전체 용량은 20MB 이하로 제한됩니다.'
+    }, 400);
+  }
+
+  // 파일 내용 읽기
+  const buffer = await file.arrayBuffer();
+
+  // 이메일 첨부 자료로 변환
+  attachments.push({
+    filename: safeFilename(file.name || item.label),
+    content: toBase64(buffer),
+    content_type: file.type
+  });
+
+}
     // 6. 고객 정보 및 요청사항 이메일 본문 작성
     const quantityText = {
       '100up': '100개 이상',
