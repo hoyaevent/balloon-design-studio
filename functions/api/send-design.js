@@ -126,23 +126,33 @@ export async function onRequestPost({ request, env }) {
     }
 
     // 4. 첨부 파일 목록
-    const fileList = [
-      {
-        key: 'frontLogo',
-        label: '앞면 로고 원본',
-        required: false
-      },
-      {
-        key: 'backLogo',
-        label: '뒷면 로고 원본',
-        required: false
-      },
-      {
-        key: 'combinedImage',
-        label: '통합 시안 이미지',
-        required: true
-      }
-    ];
+const fileList = [
+  {
+    key: 'frontLogo',
+    label: '앞면 로고 원본',
+    required: false
+  },
+  {
+    key: 'backLogo',
+    label: '뒷면 로고 원본',
+    required: false
+  },
+  {
+    key: 'frontPrintPng',
+    label: '앞면 인쇄용 PNG',
+    required: true
+  },
+  {
+    key: 'backPrintPng',
+    label: '뒷면 인쇄용 PNG',
+    required: printType.includes('양면')
+  },
+  {
+    key: 'combinedImage',
+    label: '풍선 통합 시안 이미지',
+    required: true
+  }
+];
 
     const attachments = [];
     let totalSize = 0;
@@ -176,11 +186,28 @@ export async function onRequestPost({ request, env }) {
       }
 
       // 앞면 및 뒷면 로고는 이미지 파일만 허용
-      const allowedTypes =
-        item.key === 'combinedImage'
-          ? ['image/jpeg']
-          : ['image/png', 'image/jpeg', 'image/webp'];
+let allowedTypes;
 
+if (item.key === 'combinedImage') {
+
+  allowedTypes = ['image/jpeg'];
+
+} else if (
+  item.key === 'frontPrintPng' ||
+  item.key === 'backPrintPng'
+) {
+
+  allowedTypes = ['image/png'];
+
+} else {
+
+  allowedTypes = [
+    'image/png',
+    'image/jpeg',
+    'image/webp'
+  ];
+
+}
       if (!allowedTypes.includes(file.type)) {
         return jsonResponse({
           error: 'PNG, JPG, JPEG, WEBP 파일만 첨부할 수 있습니다.'
