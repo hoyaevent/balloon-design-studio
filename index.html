@@ -840,127 +840,11 @@ function updatePrintImage(targetSide){
 makeDraggable(editor, null);
 makeDraggable(backEditor, null);
 // ================================================
-// 편집한 로고·텍스트·아이콘을 고해상도 투명 PNG로 생성
-// 18cm × 18cm / 300dpi / 2126 × 2126px
-// ================================================
-async function createPrintArtworkBlob(side = 'front') {
-  const SIZE = 2126;
-
-  const isBack = side === 'back';
-
-  const pCanvas = isBack ? backProcessedCanvas : processedCanvas;
-  const targetItems = isBack ? backItems : items;
-
-  const x = isBack ? backLogoX : logoX;
-  const y = isBack ? backLogoY : logoY;
-
-  const logoSize = Number(
-    $(isBack ? 'backLogoSize' : 'logoSize').value
-  );
-
-  const canvas = document.createElement('canvas');
-  canvas.width = SIZE;
-  canvas.height = SIZE;
-
-  const ctx = canvas.getContext('2d');
-
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-
-  // 배경을 채우지 않아 투명하게 유지
-  // 원형 인쇄 영역 바깥은 투명하게 처리
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(SIZE / 2, SIZE / 2, SIZE / 2, 0, Math.PI * 2);
-  ctx.clip();
-
-  // 로고를 선택한 잉크 색상으로 변환
-  if (pCanvas) {
-    const tintedCanvas = document.createElement('canvas');
-    tintedCanvas.width = pCanvas.width;
-    tintedCanvas.height = pCanvas.height;
-
-    const tintedCtx = tintedCanvas.getContext('2d');
-
-    tintedCtx.drawImage(pCanvas, 0, 0);
-
-    tintedCtx.globalCompositeOperation = 'source-in';
-    tintedCtx.fillStyle = inkColor;
-    tintedCtx.fillRect(
-      0,
-      0,
-      tintedCanvas.width,
-      tintedCanvas.height
-    );
-
-    const logoW = SIZE * (logoSize / 100);
-    const logoH = logoW * (pCanvas.height / pCanvas.width);
-
-    const logoCx = SIZE * (x / 100);
-    const logoCy = SIZE * (y / 100);
-
-    ctx.drawImage(
-      tintedCanvas,
-      logoCx - logoW / 2,
-      logoCy - logoH / 2,
-      logoW,
-      logoH
-    );
-  }
-
-  // 텍스트와 아이콘 추가
-  targetItems.forEach(item => {
-    const itemX = SIZE * (item.x / 100);
-    const itemY = SIZE * (item.y / 100);
-
-    const fontSize = item.size * (SIZE / 260);
-
-    let fontName = 'Arial, sans-serif';
-
-    if (item.font === 'font-gungseo') {
-      fontName = 'Gungsuh, Batang, serif';
-    }
-
-    if (item.font === 'font-round') {
-      fontName = 'Gothic A1, sans-serif';
-    }
-
-    if (item.font === 'font-gothic') {
-      fontName = 'Nanum Gothic, Malgun Gothic, sans-serif';
-    }
-
-    const fontWeight = item.type === 'text' ? 'bold' : 'normal';
-
-    ctx.font = `${fontWeight} ${fontSize}px ${fontName}`;
-    ctx.fillStyle = inkColor;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    ctx.fillText(item.text, itemX, itemY);
-  });
-
-  ctx.restore();
-
-  // PNG 파일로 변환
-  const blob = await new Promise(resolve => {
-    canvas.toBlob(resolve, 'image/png');
-  });
-
-  if (!blob) {
-    throw new Error(
-      (isBack ? '뒷면' : '앞면') +
-      ' 인쇄용 PNG 파일을 생성하지 못했습니다.'
-    );
-  }
-
-  return blob;
-}
-  // ================================================
 // 편집한 로고·텍스트·아이콘을 정사각형 SVG로 생성
 // 18cm × 18cm / 투명 배경
 // ================================================
 
-function createPrintArtworkSvgBlob(side = 'front') {
+window.createPrintArtworkSvgBlob = function(side = 'front') {
 
   const SIZE = 2126;
   const isBack = side === 'back';
@@ -1096,10 +980,10 @@ function createPrintArtworkSvgBlob(side = 'front') {
 
   return new Blob(
     [svg],
-    { type: 'image/svg+xml;charset=utf-8' }
+    { type: 'image/svg+xml' }
   );
 
-}
+};
   
 $('downloadCombinedImage').addEventListener('click', async () => {
 
@@ -1150,11 +1034,11 @@ $('downloadCombinedImage').addEventListener('click', async () => {
     '현재 화면에 표시된 디자인과 주문 정보로\n' +
     '만봉프린트에 시안을 전송하시겠습니까?\n\n' +
     '전송되는 자료:\n' +
-    '· 고객이 업로드한 로고 원본 파일\n' +
-    '· 앞면 인쇄용 고해상도 PNG\n' +
-    (isDoubleSide ? '· 뒷면 인쇄용 고해상도 PNG\n' : '') +
-    '· 풍선 통합 시안 이미지\n' +
+    '· 앞면 인쇄용 SVG 파일\n' +
+    (isDoubleSide ? '· 뒷면 인쇄용 SVG 파일\n' : '') +
+    '· 풍선 통합 시안 JPG 이미지\n' +
     '· 고객 정보 및 제작 요청사항\n\n' +
+    '로고 원본 파일은 첨부되지 않습니다.\n' +
     '전송 후에는 입력한 내용으로 접수됩니다.';
 
   if (!confirm(confirmMessage)) {
@@ -1168,7 +1052,7 @@ $('downloadCombinedImage').addEventListener('click', async () => {
   submitBtn.textContent = '시안 이미지 생성 및 전송 중...';
 
   status.textContent =
-    '고해상도 인쇄용 PNG와 풍선 시안을 생성하고 있습니다.';
+    'SVG 인쇄 파일과 풍선 시안을 생성하고 있습니다.';
 
   try {
 
@@ -1319,31 +1203,6 @@ $('downloadCombinedImage').addEventListener('click', async () => {
       throw new Error('통합 시안 이미지를 생성하지 못했습니다.');
     }
 
-    // ================================================
-    // 4. 앞면 인쇄용 투명 PNG 생성
-    // ================================================
-
-    status.textContent =
-      '앞면 인쇄용 고해상도 PNG를 생성하고 있습니다.';
-
-    const frontPrintBlob =
-      await createPrintArtworkBlob('front');
-
-    // ================================================
-    // 5. 양면이면 뒷면 PNG도 생성
-    // ================================================
-
-    let backPrintBlob = null;
-
-    if (isDoubleSide) {
-
-      status.textContent =
-        '뒷면 인쇄용 고해상도 PNG를 생성하고 있습니다.';
-
-      backPrintBlob =
-        await createPrintArtworkBlob('back');
-    }
-
 // ================================================
 // 6. 서버 전송 데이터 구성
 // ================================================
@@ -1367,7 +1226,11 @@ formData.append(
 // 앞면 SVG 인쇄 파일 생성 및 첨부
 // ================================================
 
-const frontSvgBlob = createPrintArtworkSvgBlob('front');
+if (typeof window.createPrintArtworkSvgBlob !== 'function') {
+  throw new Error('SVG 생성 함수가 페이지에 등록되지 않았습니다. 최신 index.html이 배포되었는지 확인해 주세요.');
+}
+
+const frontSvgBlob = window.createPrintArtworkSvgBlob('front');
 
 formData.append(
   'frontSvg',
@@ -1382,7 +1245,7 @@ formData.append(
 
 if (isDoubleSide) {
 
-  const backSvgBlob = createPrintArtworkSvgBlob('back');
+  const backSvgBlob = window.createPrintArtworkSvgBlob('back');
 
   formData.append(
     'backSvg',
@@ -1430,7 +1293,7 @@ formData.append(
 
     status.textContent =
   '시안 접수가 완료되었습니다.\n' +
-  '앞면·뒷면 SVG 인쇄 파일과 풍선 시안이 이메일로 전송되었습니다.';
+  (isDoubleSide ? '앞면·뒷면 SVG 인쇄 파일과 풍선 시안이 이메일로 전송되었습니다.' : '앞면 SVG 인쇄 파일과 풍선 시안이 이메일로 전송되었습니다.');
 
     alert(
       '시안 접수가 완료되었습니다.\n\n' +
