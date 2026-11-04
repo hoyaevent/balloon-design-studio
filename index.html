@@ -728,7 +728,11 @@ function processImageToCanvas(imgElem){
 
 $('logoFile').addEventListener('change', e=>{
   const f=e.target.files[0]; if(!f) return;
-  if(!/^image\/(png|jpeg|webp)$/.test(f.type)){ alert('PNG, JPG 또는 WEBP 이미지를 선택해 주세요.'); return; }
+  if(!/^image\/(png|jpeg|webp)$/.test(f.type)){
+  alert('PNG, JPG 또는 WEBP 이미지만 업로드할 수 있습니다.');
+  e.target.value = '';
+  return;
+}
   if(objectUrl) URL.revokeObjectURL(objectUrl);
   objectUrl=URL.createObjectURL(f);
   sourceImage=new Image();
@@ -836,7 +840,7 @@ function updatePrintImage(targetSide){
 makeDraggable(editor, null);
 makeDraggable(backEditor, null);
 
-$('downloadCombinedImage').addEventListener('click', () => {
+$('downloadCombinedImage').addEventListener('click', async () => {
   if(!selectedBalloonImage || !selectedBalloonImage.complete || !selectedBalloonImage.naturalWidth){
     alert('선택한 풍선 이미지를 불러오는 중입니다. 잠시 후 다시 저장해 주세요.');
     return;
