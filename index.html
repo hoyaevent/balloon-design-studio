@@ -955,6 +955,152 @@ async function createPrintArtworkBlob(side = 'front') {
 
   return blob;
 }
+  // ================================================
+// 편집한 로고·텍스트·아이콘을 정사각형 SVG로 생성
+// 18cm × 18cm / 투명 배경
+// ================================================
+
+function createPrintArtworkSvgBlob(side = 'front') {
+
+  const SIZE = 2126;
+  const isBack = side === 'back';
+
+  const pCanvas = isBack ? backProcessedCanvas : processedCanvas;
+  const targetItems = isBack ? backItems : items;
+
+  const x = isBack ? backLogoX : logoX;
+  const y = isBack ? backLogoY : logoY;
+
+  const logoSize = Number(
+    $(isBack ? 'backLogoSize' : 'logoSize').value
+  );
+
+  // SVG 안에 넣을 문자열의 특수문자 처리
+  const escapeXml = (value) => {
+    return String(value).replace(/[&<>"']/g, char => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&apos;'
+    })[char]);
+  };
+
+  let artwork = '';
+
+  // 로고 이미지 추가
+  if (pCanvas) {
+
+    const tintedCanvas = document.createElement('canvas');
+    tintedCanvas.width = pCanvas.width;
+    tintedCanvas.height = pCanvas.height;
+
+    const tintedCtx = tintedCanvas.getContext('2d');
+
+    tintedCtx.drawImage(pCanvas, 0, 0);
+
+    tintedCtx.globalCompositeOperation = 'source-in';
+    tintedCtx.fillStyle = inkColor;
+    tintedCtx.fillRect(
+      0,
+      0,
+      tintedCanvas.width,
+      tintedCanvas.height
+    );
+
+    const logoW = SIZE * (logoSize / 100);
+    const logoH = logoW * (pCanvas.height / pCanvas.width);
+
+    const logoCx = SIZE * (x / 100);
+    const logoCy = SIZE * (y / 100);
+
+    const logoData = tintedCanvas.toDataURL('image/png');
+
+    artwork += `
+      <image
+        href="${logoData}"
+        x="${logoCx - logoW / 2}"
+        y="${logoCy - logoH / 2}"
+        width="${logoW}"
+        height="${logoH}"
+        preserveAspectRatio="none"
+      />
+    `;
+  }
+
+  // 텍스트와 아이콘 추가
+  targetItems.forEach(item => {
+
+    const itemX = SIZE * (item.x / 100);
+    const itemY = SIZE * (item.y / 100);
+
+    const fontSize = item.size * (SIZE / 260);
+
+    let fontName = 'Arial, sans-serif';
+
+    if (item.font === 'font-gungseo') {
+      fontName = 'Gungsuh, Batang, serif';
+    }
+
+    if (item.font === 'font-round') {
+      fontName = 'Gothic A1, sans-serif';
+    }
+
+    if (item.font === 'font-gothic') {
+      fontName = 'Nanum Gothic, Malgun Gothic, sans-serif';
+    }
+
+    const fontWeight = item.type === 'text' ? 'bold' : 'normal';
+
+    artwork += `
+      <text
+        x="${itemX}"
+        y="${itemY}"
+        font-family="${escapeXml(fontName)}"
+        font-size="${fontSize}"
+        font-weight="${fontWeight}"
+        fill="${escapeXml(inkColor)}"
+        text-anchor="middle"
+        dominant-baseline="central"
+      >${escapeXml(item.text)}</text>
+    `;
+
+  });
+
+  // 투명 배경 + 원형 인쇄 영역
+  const svg = `
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      width="180mm"
+      height="180mm"
+      viewBox="0 0 ${SIZE} ${SIZE}"
+    >
+
+      <defs>
+        <clipPath id="printClip">
+          <circle
+            cx="${SIZE / 2}"
+            cy="${SIZE / 2}"
+            r="${SIZE / 2}"
+          />
+        </clipPath>
+      </defs>
+
+      <g clip-path="url(#printClip)">
+        ${artwork}
+      </g>
+
+    </svg>
+  `;
+
+  return new Blob(
+    [svg],
+    { type: 'image/svg+xml;charset=utf-8' }
+  );
+
+}
+  
 $('downloadCombinedImage').addEventListener('click', async () => {
 
   // 풍선 이미지 확인
@@ -1283,8 +1429,8 @@ formData.append(
     // ================================================
 
     status.textContent =
-      '시안 접수가 완료되었습니다.\n' +
-      '원본 로고, 인쇄용 PNG, 풍선 시안이 이메일로 전송되었습니다.';
+  '시안 접수가 완료되었습니다.\n' +
+  '앞면·뒷면 SVG 인쇄 파일과 풍선 시안이 이메일로 전송되었습니다.';
 
     alert(
       '시안 접수가 완료되었습니다.\n\n' +
