@@ -318,7 +318,7 @@ footer{max-width:1200px;margin:auto;padding:0 16px 36px;color:var(--muted);font-
   <div class="notice"><strong>중요:</strong> 현재 화면은 미리보기용 1차 버전입니다. 제출 버튼은 전송 테스트용입니다.</div>
   
   <div class="actions">
-    <button id="downloadCombinedImage" type="button" style="width:100%; padding:14px; font-size:16px;">통합 시안 이미지 저장</button>
+    <button id="downloadCombinedImage" type="button" style="width:100%; padding:14px; font-size:16px;">시안 이미지 메일전송</button>
   </div>
   <p id="submitStatus" class="status muted">접수 및 이메일 전송은 Supabase와 이메일 서비스를 연결한 뒤 활성화됩니다.</p>
 </section>
@@ -839,94 +839,369 @@ function updatePrintImage(targetSide){
 
 makeDraggable(editor, null);
 makeDraggable(backEditor, null);
+// ================================================
+// 편집한 로고·텍스트·아이콘을 고해상도 투명 PNG로 생성
+// 18cm × 18cm / 300dpi / 2126 × 2126px
+// ================================================
+async function createPrintArtworkBlob(side = 'front') {
+  const SIZE = 2126;
 
+  const isBack = side === 'back';
+
+  const pCanvas = isBack ? backProcessedCanvas : processedCanvas;
+  const targetItems = isBack ? backItems : items;
+
+  const x = isBack ? backLogoX : logoX;
+  const y = isBack ? backLogoY : logoY;
+
+  const logoSize = Number(
+    $(isBack ? 'backLogoSize' : 'logoSize').value
+  );
+
+  const canvas = document.createElement('canvas');
+  canvas.width = SIZE;
+  canvas.height = SIZE;
+
+  const ctx = canvas.getContext('2d');
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+
+  // 배경을 채우지 않아 투명하게 유지
+  // 원형 인쇄 영역 바깥은 투명하게 처리
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(SIZE / 2, SIZE / 2, SIZE / 2, 0, Math.PI * 2);
+  ctx.clip();
+
+  // 로고를 선택한 잉크 색상으로 변환
+  if (pCanvas) {
+    const tintedCanvas = document.createElement('canvas');
+    tintedCanvas.width = pCanvas.width;
+    tintedCanvas.height = pCanvas.height;
+
+    const tintedCtx = tintedCanvas.getContext('2d');
+
+    tintedCtx.drawImage(pCanvas, 0, 0);
+
+    tintedCtx.globalCompositeOperation = 'source-in';
+    tintedCtx.fillStyle = inkColor;
+    tintedCtx.fillRect(
+      0,
+      0,
+      tintedCanvas.width,
+      tintedCanvas.height
+    );
+
+    const logoW = SIZE * (logoSize / 100);
+    const logoH = logoW * (pCanvas.height / pCanvas.width);
+
+    const logoCx = SIZE * (x / 100);
+    const logoCy = SIZE * (y / 100);
+
+    ctx.drawImage(
+      tintedCanvas,
+      logoCx - logoW / 2,
+      logoCy - logoH / 2,
+      logoW,
+      logoH
+    );
+  }
+
+  // 텍스트와 아이콘 추가
+  targetItems.forEach(item => {
+    const itemX = SIZE * (item.x / 100);
+    const itemY = SIZE * (item.y / 100);
+
+    const fontSize = item.size * (SIZE / 260);
+
+    let fontName = 'Arial, sans-serif';
+
+    if (item.font === 'font-gungseo') {
+      fontName = 'Gungsuh, Batang, serif';
+    }
+
+    if (item.font === 'font-round') {
+      fontName = 'Gothic A1, sans-serif';
+    }
+
+    if (item.font === 'font-gothic') {
+      fontName = 'Nanum Gothic, Malgun Gothic, sans-serif';
+    }
+
+    const fontWeight = item.type === 'text' ? 'bold' : 'normal';
+
+    ctx.font = `${fontWeight} ${fontSize}px ${fontName}`;
+    ctx.fillStyle = inkColor;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    ctx.fillText(item.text, itemX, itemY);
+  });
+
+  ctx.restore();
+
+  // PNG 파일로 변환
+  const blob = await new Promise(resolve => {
+    canvas.toBlob(resolve, 'image/png');
+  });
+
+  if (!blob) {
+    throw new Error(
+      (isBack ? '뒷면' : '앞면') +
+      ' 인쇄용 PNG 파일을 생성하지 못했습니다.'
+    );
+  }
+
+  return blob;
+}
 $('downloadCombinedImage').addEventListener('click', async () => {
-  if(!selectedBalloonImage || !selectedBalloonImage.complete || !selectedBalloonImage.naturalWidth){
-    alert('선택한 풍선 이미지를 불러오는 중입니다. 잠시 후 다시 저장해 주세요.');
+
+  // 풍선 이미지 확인
+  if (
+    !selectedBalloonImage ||
+    !selectedBalloonImage.complete ||
+    !selectedBalloonImage.naturalWidth
+  ) {
+    alert('선택한 풍선 이미지를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
     return;
   }
-    // 고객 정보 가져오기
+
+  // 고객 정보 가져오기
   const customerName = $('customerName').value.trim();
   const phone = $('phone').value.trim();
   const email = $('email').value.trim();
   const requestMemo = $('requestMemo').value.trim();
 
   // 필수 정보 확인
-  if(!customerName || !phone){
+  if (!customerName || !phone) {
     alert('고객명과 연락처를 입력해 주세요.');
     return;
   }
 
-  // 이메일을 입력한 경우 형식 확인
-  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+  // 이메일 형식 확인
+  if (
+    email &&
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  ) {
     alert('올바른 이메일 주소를 입력해 주세요.');
     return;
   }
-  
+
   const isDoubleSide = selectedPrintType.includes('양면');
-  const canvasW = 2000;
-  const canvasH = isDoubleSide ? 2000 : 1000;
-  const c = document.createElement('canvas');
-  c.width = canvasW; c.height = canvasH;
-  const ctx = c.getContext('2d');
 
-  // 💡 [추가된 부분] 다운로드 이미지 전체 배경을 깔끔한 흰색(#ffffff)으로 채웁니다.
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, c.width, c.height);
-
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, canvasW, canvasH);
-
-  if(!isDoubleSide){
-    ctx.strokeStyle = '#d9dee7'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(1000, 40); ctx.lineTo(1000, 960); ctx.stroke();
-
-    renderLogoWorkspaceOnCanvas(ctx, 500, 500, processedCanvas, logoX, logoY, items, Number($('logoSize').value), '인쇄 로고 도안 (#000000)');
-    renderBalloonOnCanvas(ctx, 1500, 500, processedCanvas, logoX, logoY, items, Number($('logoSize').value), `풍선 미리보기 시안 (${selectedPrintType})`);
-  } else {
-    ctx.strokeStyle = '#d9dee7'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(1000, 40); ctx.lineTo(1000, 1960); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(40, 1000); ctx.lineTo(1960, 1000); ctx.stroke();
-
-    renderLogoWorkspaceOnCanvas(ctx, 500, 500, processedCanvas, logoX, logoY, items, Number($('logoSize').value), '앞면 인쇄 로고 도안');
-    renderBalloonOnCanvas(ctx, 1500, 500, processedCanvas, logoX, logoY, items, Number($('logoSize').value), '앞면 풍선 미리보기 시안');
-
-    renderLogoWorkspaceOnCanvas(ctx, 500, 1500, backProcessedCanvas, backLogoX, backLogoY, backItems, Number($('backLogoSize').value), '뒷면 인쇄 로고 도안');
-    renderBalloonOnCanvas(ctx, 1500, 1500, backProcessedCanvas, backLogoX, backLogoY, backItems, Number($('backLogoSize').value), '뒷면 풍선 미리보기 시안');
+  // 양면 선택 시 뒷면 디자인도 함께 확인
+  if (
+    isDoubleSide &&
+    !$('backEditorSection')
+  ) {
+    alert('뒷면 디자인 영역을 확인해 주세요.');
+    return;
   }
- 
-  const fileName = customerName
-    ? `${customerName}_만봉프린트-통합시안(${selectedPrintType}).jpg`
-    : `만봉프린트-통합시안(${selectedPrintType}).jpg`;
 
-  // 1. 기존 통합 시안 이미지 다운로드 기능 유지
-  const a = document.createElement('a');
-  a.download = fileName;
-  a.href = c.toDataURL('image/jpeg', 0.95);
-  a.click();
+  // 최종 발주 확인
+  const confirmMessage =
+    '현재 화면에 표시된 디자인과 주문 정보로\n' +
+    '만봉프린트에 시안을 전송하시겠습니까?\n\n' +
+    '전송되는 자료:\n' +
+    '· 고객이 업로드한 로고 원본 파일\n' +
+    '· 앞면 인쇄용 고해상도 PNG\n' +
+    (isDoubleSide ? '· 뒷면 인쇄용 고해상도 PNG\n' : '') +
+    '· 풍선 통합 시안 이미지\n' +
+    '· 고객 정보 및 제작 요청사항\n\n' +
+    '전송 후에는 입력한 내용으로 접수됩니다.';
 
-  // 2. 이메일 발송 시작
+  if (!confirm(confirmMessage)) {
+    return;
+  }
+
   const submitBtn = $('downloadCombinedImage');
   const status = $('submitStatus');
 
   submitBtn.disabled = true;
-  submitBtn.textContent = '이메일 전송 중...';
-  status.textContent = '시안 이미지 저장 완료. 이메일 접수를 진행하고 있습니다.';
+  submitBtn.textContent = '시안 이미지 생성 및 전송 중...';
+
+  status.textContent =
+    '고해상도 인쇄용 PNG와 풍선 시안을 생성하고 있습니다.';
 
   try {
-    // 통합 시안 캔버스를 JPG 파일로 변환
+
+    // 웹 폰트 로딩 완료 대기
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
+    }
+
+    // ================================================
+    // 1. 기존 통합 시안 이미지 생성
+    // ================================================
+
+    const canvasW = 2000;
+    const canvasH = isDoubleSide ? 2000 : 1000;
+
+    const c = document.createElement('canvas');
+    c.width = canvasW;
+    c.height = canvasH;
+
+    const ctx = c.getContext('2d');
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvasW, canvasH);
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    if (!isDoubleSide) {
+
+      ctx.strokeStyle = '#d9dee7';
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      ctx.moveTo(1000, 40);
+      ctx.lineTo(1000, 960);
+      ctx.stroke();
+
+      renderLogoWorkspaceOnCanvas(
+        ctx,
+        500,
+        500,
+        processedCanvas,
+        logoX,
+        logoY,
+        items,
+        Number($('logoSize').value),
+        '인쇄 로고 도안'
+      );
+
+      renderBalloonOnCanvas(
+        ctx,
+        1500,
+        500,
+        processedCanvas,
+        logoX,
+        logoY,
+        items,
+        Number($('logoSize').value),
+        `풍선 미리보기 시안 (${selectedPrintType})`
+      );
+
+    } else {
+
+      ctx.strokeStyle = '#d9dee7';
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      ctx.moveTo(1000, 40);
+      ctx.lineTo(1000, 1960);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(40, 1000);
+      ctx.lineTo(1960, 1000);
+      ctx.stroke();
+
+      renderLogoWorkspaceOnCanvas(
+        ctx,
+        500,
+        500,
+        processedCanvas,
+        logoX,
+        logoY,
+        items,
+        Number($('logoSize').value),
+        '앞면 인쇄 로고 도안'
+      );
+
+      renderBalloonOnCanvas(
+        ctx,
+        1500,
+        500,
+        processedCanvas,
+        logoX,
+        logoY,
+        items,
+        Number($('logoSize').value),
+        '앞면 풍선 미리보기 시안'
+      );
+
+      renderLogoWorkspaceOnCanvas(
+        ctx,
+        500,
+        1500,
+        backProcessedCanvas,
+        backLogoX,
+        backLogoY,
+        backItems,
+        Number($('backLogoSize').value),
+        '뒷면 인쇄 로고 도안'
+      );
+
+      renderBalloonOnCanvas(
+        ctx,
+        1500,
+        1500,
+        backProcessedCanvas,
+        backLogoX,
+        backLogoY,
+        backItems,
+        Number($('backLogoSize').value),
+        '뒷면 풍선 미리보기 시안'
+      );
+    }
+
+    // ================================================
+    // 2. 파일 이름 생성
+    // ================================================
+
+    const safeCustomerName = customerName
+      .replace(/[\\/:*?"<>|]/g, '_')
+      .slice(0, 60);
+
+    const filePrefix = `${safeCustomerName}_만봉프린트`;
+
+    const combinedFileName =
+      `${filePrefix}_통합시안(${selectedPrintType}).jpg`;
+
+    // ================================================
+    // 3. 통합 시안 JPG 생성
+    // ================================================
+
     const combinedBlob = await new Promise(resolve => {
       c.toBlob(resolve, 'image/jpeg', 0.95);
     });
 
     if (!combinedBlob) {
-      throw new Error('통합 시안 이미지를 파일로 변환하지 못했습니다.');
+      throw new Error('통합 시안 이미지를 생성하지 못했습니다.');
     }
 
-    // 서버로 전달할 데이터 구성
+    // ================================================
+    // 4. 앞면 인쇄용 투명 PNG 생성
+    // ================================================
+
+    status.textContent =
+      '앞면 인쇄용 고해상도 PNG를 생성하고 있습니다.';
+
+    const frontPrintBlob =
+      await createPrintArtworkBlob('front');
+
+    // ================================================
+    // 5. 양면이면 뒷면 PNG도 생성
+    // ================================================
+
+    let backPrintBlob = null;
+
+    if (isDoubleSide) {
+
+      status.textContent =
+        '뒷면 인쇄용 고해상도 PNG를 생성하고 있습니다.';
+
+      backPrintBlob =
+        await createPrintArtworkBlob('back');
+    }
+
+    // ================================================
+    // 6. 서버 전송 데이터 구성
+    // ================================================
+
     const formData = new FormData();
 
     formData.append('customerName', customerName);
@@ -935,31 +1210,64 @@ $('downloadCombinedImage').addEventListener('click', async () => {
     formData.append('requestMemo', requestMemo);
     formData.append('printType', selectedPrintType);
     formData.append('quantity', $('quantity').value);
+
     formData.append(
       'balloonName',
       selectedBalloonEntry ? selectedBalloonEntry.name : ''
     );
 
-    // 앞면 원본 로고 첨부
+    // 고객이 처음 업로드한 앞면 원본 로고
     const frontFile = $('logoFile').files[0];
+
     if (frontFile) {
-      formData.append('frontLogo', frontFile, frontFile.name);
+      formData.append(
+        'frontLogo',
+        frontFile,
+        frontFile.name
+      );
     }
 
-    // 뒷면 원본 로고 첨부
+    // 고객이 처음 업로드한 뒷면 원본 로고
     const backFile = $('backLogoFile').files[0];
+
     if (backFile) {
-      formData.append('backLogo', backFile, backFile.name);
+      formData.append(
+        'backLogo',
+        backFile,
+        backFile.name
+      );
     }
 
-    // 통합 시안 이미지 첨부
+    // 앞면 인쇄용 투명 PNG
+    formData.append(
+      'frontPrintPng',
+      frontPrintBlob,
+      `${filePrefix}_앞면_인쇄용.png`
+    );
+
+    // 양면일 때 뒷면 인쇄용 투명 PNG
+    if (backPrintBlob) {
+      formData.append(
+        'backPrintPng',
+        backPrintBlob,
+        `${filePrefix}_뒷면_인쇄용.png`
+      );
+    }
+
+    // 풍선 통합 시안 JPG
     formData.append(
       'combinedImage',
       combinedBlob,
-      fileName
+      combinedFileName
     );
 
-    // Cloudflare Pages Functions에 이메일 발송 요청
+    // ================================================
+    // 7. Cloudflare 서버로 이메일 전송 요청
+    // ================================================
+
+    status.textContent =
+      '첨부 파일을 전송하고 있습니다. 잠시만 기다려 주세요.';
+
     const response = await fetch('/api/send-design', {
       method: 'POST',
       body: formData
@@ -969,40 +1277,46 @@ $('downloadCombinedImage').addEventListener('click', async () => {
 
     if (!response.ok || !result.success) {
       throw new Error(
-        result.error || `이메일 발송 실패 (오류 코드: ${response.status})`
+        result.error ||
+        `이메일 발송 실패 (오류 코드: ${response.status})`
       );
     }
 
-    // 발송 성공
-    status.textContent =
-      '시안 이미지 저장 및 이메일 접수가 완료되었습니다.';
+    // ================================================
+    // 8. 전송 성공
+    // ================================================
 
-    alert('시안 이미지 저장 및 이메일 접수가 완료되었습니다.');
+    status.textContent =
+      '시안 접수가 완료되었습니다.\n' +
+      '원본 로고, 인쇄용 PNG, 풍선 시안이 이메일로 전송되었습니다.';
+
+    alert(
+      '시안 접수가 완료되었습니다.\n\n' +
+      '만봉프린트로 주문 정보와 디자인 파일이 전송되었습니다.'
+    );
 
   } catch (error) {
 
-    // 발송 실패
-    console.error('이메일 발송 오류:', error);
+    console.error('시안 이메일 발송 오류:', error);
 
     status.textContent =
-      '이미지는 저장되었지만 이메일 접수에 실패했습니다.\n' +
+      '이메일 접수에 실패했습니다.\n' +
       error.message;
 
     alert(
-      '이미지는 저장되었습니다.\n' +
-      '하지만 이메일 발송에 실패했습니다.\n\n' +
-      error.message
+      '이메일 전송에 실패했습니다.\n\n' +
+      error.message +
+      '\n\n잠시 후 다시 시도해 주세요.'
     );
 
   } finally {
 
-    // 버튼 원래 상태로 복구
     submitBtn.disabled = false;
-    submitBtn.textContent = '통합 시안 이미지 저장';
+    submitBtn.textContent = '시안 이미지 메일전송';
+
   }
+
 });
-
-
 function renderLogoWorkspaceOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetItems, lSize, titleText){
   const circleRadius = 320;
   ctx.save();
