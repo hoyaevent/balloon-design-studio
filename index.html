@@ -897,14 +897,111 @@ $('downloadCombinedImage').addEventListener('click', async () => {
     renderLogoWorkspaceOnCanvas(ctx, 500, 1500, backProcessedCanvas, backLogoX, backLogoY, backItems, Number($('backLogoSize').value), '뒷면 인쇄 로고 도안');
     renderBalloonOnCanvas(ctx, 1500, 1500, backProcessedCanvas, backLogoX, backLogoY, backItems, Number($('backLogoSize').value), '뒷면 풍선 미리보기 시안');
   }
+ 
+  const fileName = customerName
+    ? `${customerName}_만봉프린트-통합시안(${selectedPrintType}).jpg`
+    : `만봉프린트-통합시안(${selectedPrintType}).jpg`;
 
-  const fileName = customerName ? `${customerName}_만봉프린트-통합시안(${selectedPrintType}).jpg` : `만봉프린트-통합시안(${selectedPrintType}).jpg`;
-
+  // 1. 기존 통합 시안 이미지 다운로드 기능 유지
   const a = document.createElement('a');
   a.download = fileName;
   a.href = c.toDataURL('image/jpeg', 0.95);
   a.click();
+
+  // 2. 이메일 발송 시작
+  const submitBtn = $('downloadCombinedImage');
+  const status = $('submitStatus');
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = '이메일 전송 중...';
+  status.textContent = '시안 이미지 저장 완료. 이메일 접수를 진행하고 있습니다.';
+
+  try {
+    // 통합 시안 캔버스를 JPG 파일로 변환
+    const combinedBlob = await new Promise(resolve => {
+      c.toBlob(resolve, 'image/jpeg', 0.95);
+    });
+
+    if (!combinedBlob) {
+      throw new Error('통합 시안 이미지를 파일로 변환하지 못했습니다.');
+    }
+
+    // 서버로 전달할 데이터 구성
+    const formData = new FormData();
+
+    formData.append('customerName', customerName);
+    formData.append('phone', phone);
+    formData.append('email', email);
+    formData.append('requestMemo', requestMemo);
+    formData.append('printType', selectedPrintType);
+    formData.append('quantity', $('quantity').value);
+    formData.append(
+      'balloonName',
+      selectedBalloonEntry ? selectedBalloonEntry.name : ''
+    );
+
+    // 앞면 원본 로고 첨부
+    const frontFile = $('logoFile').files[0];
+    if (frontFile) {
+      formData.append('frontLogo', frontFile, frontFile.name);
+    }
+
+    // 뒷면 원본 로고 첨부
+    const backFile = $('backLogoFile').files[0];
+    if (backFile) {
+      formData.append('backLogo', backFile, backFile.name);
+    }
+
+    // 통합 시안 이미지 첨부
+    formData.append(
+      'combinedImage',
+      combinedBlob,
+      fileName
+    );
+
+    // Cloudflare Pages Functions에 이메일 발송 요청
+    const response = await fetch('/api/send-design', {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok || !result.success) {
+      throw new Error(
+        result.error || `이메일 발송 실패 (오류 코드: ${response.status})`
+      );
+    }
+
+    // 발송 성공
+    status.textContent =
+      '시안 이미지 저장 및 이메일 접수가 완료되었습니다.';
+
+    alert('시안 이미지 저장 및 이메일 접수가 완료되었습니다.');
+
+  } catch (error) {
+
+    // 발송 실패
+    console.error('이메일 발송 오류:', error);
+
+    status.textContent =
+      '이미지는 저장되었지만 이메일 접수에 실패했습니다.\n' +
+      error.message;
+
+    alert(
+      '이미지는 저장되었습니다.\n' +
+      '하지만 이메일 발송에 실패했습니다.\n\n' +
+      error.message
+    );
+
+  } finally {
+
+    // 버튼 원래 상태로 복구
+    submitBtn.disabled = false;
+    submitBtn.textContent = '통합 시안 이미지 저장';
+  }
 });
+
 
 function renderLogoWorkspaceOnCanvas(ctx, centerX, centerY, pCanvas, lX, lY, targetItems, lSize, titleText){
   const circleRadius = 320;
