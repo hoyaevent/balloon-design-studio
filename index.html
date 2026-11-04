@@ -1198,68 +1198,64 @@ $('downloadCombinedImage').addEventListener('click', async () => {
         await createPrintArtworkBlob('back');
     }
 
-    // ================================================
-    // 6. 서버 전송 데이터 구성
-    // ================================================
+// ================================================
+// 6. 서버 전송 데이터 구성
+// ================================================
 
-    const formData = new FormData();
+const formData = new FormData();
 
-    formData.append('customerName', customerName);
-    formData.append('phone', phone);
-    formData.append('email', email);
-    formData.append('requestMemo', requestMemo);
-    formData.append('printType', selectedPrintType);
-    formData.append('quantity', $('quantity').value);
+formData.append('customerName', customerName);
+formData.append('phone', phone);
+formData.append('email', email);
+formData.append('requestMemo', requestMemo);
+formData.append('printType', selectedPrintType);
+formData.append('quantity', $('quantity').value);
 
-    formData.append(
-      'balloonName',
-      selectedBalloonEntry ? selectedBalloonEntry.name : ''
-    );
+formData.append(
+  'balloonName',
+  selectedBalloonEntry ? selectedBalloonEntry.name : ''
+);
 
-    // 고객이 처음 업로드한 앞면 원본 로고
-    const frontFile = $('logoFile').files[0];
 
-    if (frontFile) {
-      formData.append(
-        'frontLogo',
-        frontFile,
-        frontFile.name
-      );
-    }
+// ================================================
+// 앞면 SVG 인쇄 파일 생성 및 첨부
+// ================================================
 
-    // 고객이 처음 업로드한 뒷면 원본 로고
-    const backFile = $('backLogoFile').files[0];
+const frontSvgBlob = createPrintArtworkSvgBlob('front');
 
-    if (backFile) {
-      formData.append(
-        'backLogo',
-        backFile,
-        backFile.name
-      );
-    }
+formData.append(
+  'frontSvg',
+  frontSvgBlob,
+  `${filePrefix}_앞면_인쇄용.svg`
+);
 
-    // 앞면 인쇄용 투명 PNG
-    formData.append(
-      'frontPrintPng',
-      frontPrintBlob,
-      `${filePrefix}_앞면_인쇄용.png`
-    );
 
-    // 양면일 때 뒷면 인쇄용 투명 PNG
-    if (backPrintBlob) {
-      formData.append(
-        'backPrintPng',
-        backPrintBlob,
-        `${filePrefix}_뒷면_인쇄용.png`
-      );
-    }
+// ================================================
+// 양면 인쇄일 경우 뒷면 SVG 생성 및 첨부
+// ================================================
 
-    // 풍선 통합 시안 JPG
-    formData.append(
-      'combinedImage',
-      combinedBlob,
-      combinedFileName
-    );
+if (isDoubleSide) {
+
+  const backSvgBlob = createPrintArtworkSvgBlob('back');
+
+  formData.append(
+    'backSvg',
+    backSvgBlob,
+    `${filePrefix}_뒷면_인쇄용.svg`
+  );
+
+}
+
+
+// ================================================
+// 풍선 통합 시안 JPG 첨부
+// ================================================
+
+formData.append(
+  'combinedImage',
+  combinedBlob,
+  combinedFileName
+);
 
     // ================================================
     // 7. Cloudflare 서버로 이메일 전송 요청
